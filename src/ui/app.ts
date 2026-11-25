@@ -242,7 +242,7 @@ function startRound(idx: number) {
         </div>
         ${controls()}
       </header>
-      <p class="setup">${esc(type.setup(round))}</p>
+      <p class="setup"><span class="goal"><b>Goal:</b> ${esc(type.goal(round))}</span>${esc(type.setup(round))}</p>
       <div class="scene-slot">
         <div class="scene-wrap">
           <button class="skip btn small" hidden>Skip ›</button>

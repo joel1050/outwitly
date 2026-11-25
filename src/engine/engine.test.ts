@@ -91,6 +91,14 @@ describe('sample day fixtures', () => {
     }
   });
 
+  it('every round states a short goal', () => {
+    for (const r of SAMPLE_DAY.rounds) {
+      const text = PUZZLES[r.type].goal(r);
+      expect(text.split(/\s+/).length, text).toBeLessThanOrEqual(10);
+    }
+    expect(PUZZLES.agenda.goal(SAMPLE_DAY.rounds[3])).toBe('Get the Garden built. Second best: the Fountain.');
+  });
+
   it('every round has a single best option with a clear gap', () => {
     for (const r of SAMPLE_DAY.rounds) {
       const qs = gradeRound(r).graded.map((g) => g.quality).sort((a, b) => b - a);

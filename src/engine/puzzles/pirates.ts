@@ -43,8 +43,9 @@ export const pirates: PuzzleType<PiratesParams> = {
   family: 'splitting',
   title: 'Pirates',
   betterIs: 'higher',
+  goal: () => 'Keep the most gold without walking the plank.',
   setup: (r) =>
-    `You’re captain, splitting ${r.params.gold} gold coins with ${listJoin(r.params.crew.map((c) => CHARACTERS[c].name))}. Keep as many as you can. Shares are listed in order: you, ${r.params.crew.map((c) => CHARACTERS[c].name).join(', ')}. You need ${r.params.votesNeeded} of ${r.params.crew.length + 1} votes (yours counts), or you walk the plank.`,
+    `You’re captain, splitting ${r.params.gold} gold with ${listJoin(r.params.crew.map((c) => CHARACTERS[c].name))}. Shares go in order: you, ${r.params.crew.map((c) => CHARACTERS[c].name).join(', ')}. Get ${r.params.votesNeeded} of ${r.params.crew.length + 1} votes (yours counts) or walk the plank.`,
   options: (r) =>
     Object.entries(r.options as Splits).map(([id, s]) => ({ id, label: id, detail: s.join(' / ') })),
   resolve(r, optionId) {

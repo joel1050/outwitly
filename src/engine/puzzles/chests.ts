@@ -23,6 +23,7 @@ export const chests: PuzzleType<ChestsParams> = {
   family: 'crowding',
   title: 'Chests',
   betterIs: 'higher',
+  goal: () => 'End up with the most coins.',
   setup: (r) => {
     const names = r.params.order.filter((a) => a !== 'you').map((a) => CHARACTERS[a].name);
     return `Four chests hold ${r.params.chests.join(', ')} coins. Everyone on a chest shares it equally. You pick first, then ${names.slice(0, -1).join(', ')} and ${names.at(-1)}.`;

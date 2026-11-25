@@ -65,6 +65,8 @@ export interface PuzzleType<P = any> {
   id: string;
   family: Family;
   title: string;
+  /** One short line saying what the player is trying to achieve; it matches how the round is scored. */
+  goal(round: Round<P>): string;
   setup(round: Round<P>): string;
   options(round: Round<P>): OptionDef[];
   resolve(round: Round<P>, optionId: string): Outcome;

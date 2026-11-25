@@ -12,6 +12,7 @@ export const junction: PuzzleType<JunctionParams> = {
   family: 'trust',
   title: 'Junction',
   betterIs: 'lower',
+  goal: () => 'The trolley hits as few people as possible.',
   setup: (r) => {
     const e = r.params.exits;
     return `A trolley is coming. One lever pulled sends it left; both send it right; neither, straight. Straight: ${e.straight}. Left: ${e.left}. Right: ${e.right}. Hero acts after you.`;

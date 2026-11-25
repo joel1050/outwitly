@@ -29,8 +29,14 @@ export const agenda: PuzzleType<AgendaParams> = {
   family: 'voting',
   title: 'Agenda',
   betterIs: 'higher',
+  goal: (r) => {
+    // Built from your values, so the goal always matches the scoring.
+    const [first, second] = Object.entries(r.params.yourValues as Record<string, number>)
+      .sort((a, b) => b[1] - a[1]).map(([k]) => title(k));
+    return `Get the ${first} built. Second best: the ${second}.`;
+  },
   setup: () =>
-    'You want the Garden built. Two proposals face a vote first; the winner then faces the third. You choose which two go first. Each card lists a voter’s preferences, favourite first.',
+    'Two proposals face a vote first; the winner then faces the third. You choose which two go first. Each card lists a voter’s preferences, favourite first.',
   options: (r) => pairs(r).map(([a, b]) => ({
     id: `${a}_${b}_first`, label: `${title(a)} vs ${title(b)}`,
   })),

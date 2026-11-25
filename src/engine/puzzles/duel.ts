@@ -103,6 +103,7 @@ export const duel: PuzzleType<DuelParams> = {
   title: 'Duel',
   betterIs: 'higher',
   floor: (r) => r.params.floor,
+  goal: () => 'Be the last one dry.',
   setup: () =>
     'A water-balloon duel; the last one dry wins. Throw order: you, Cautious, Show-off, repeat. Where does your first balloon go? After that, you aim at whoever is left.',
   options: () => [

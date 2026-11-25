@@ -5,10 +5,51 @@ let enabled = false;
 let userMuted = false;
 let suppressed = false;
 
+/** Half a second of 8-bit mono silence as a WAV data URI. */
+function silentWav(): string {
+  const n = 4000;
+  const b = new Uint8Array(44 + n);
+  const v = new DataView(b.buffer);
+  const str = (o: number, s: string) => { for (let i = 0; i < s.length; i++) b[o + i] = s.charCodeAt(i); };
+  str(0, 'RIFF'); v.setUint32(4, 36 + n, true); str(8, 'WAVE');
+  str(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+  str(36, 'data'); v.setUint32(40, n, true);
+  b.fill(128, 44);
+  let bin = '';
+  b.forEach((x) => { bin += String.fromCharCode(x); });
+  return `data:audio/wav;base64,${btoa(bin)}`;
+}
+
+/**
+ * iPhones mute Web Audio when the silent switch is on. Asking for the "playback" audio session
+ * makes the sounds play anyway, like a video would. Safari 16.4+ has an API for this; older iOS
+ * needs a looping silent <audio> element, which moves the page into the same session.
+ * Must run inside a user gesture.
+ */
+function playThroughSilentSwitch() {
+  const nav = navigator as Navigator & { audioSession?: { type: string } };
+  if (nav.audioSession) {
+    try { nav.audioSession.type = 'playback'; return; } catch { /* fall through */ }
+  }
+  if (!/iP(hone|ad|od)|Macintosh/.test(navigator.userAgent) || !('ontouchend' in document)) return;
+  const el = document.createElement('audio');
+  el.setAttribute('x-webkit-airplay', 'deny');
+  el.loop = true;
+  el.src = silentWav();
+  void el.play().catch(() => {});
+  // Don't hold the audio session while the tab is in the background.
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) el.pause();
+    else void el.play().catch(() => {});
+  });
+}
+
 export function initAudio(muted: boolean) {
   userMuted = muted;
   const unlock = () => {
     if (!ctx) {
+      playThroughSilentSwitch();
       ctx = new AudioContext();
       noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
       const d = noise.getChannelData(0);

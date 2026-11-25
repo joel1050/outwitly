@@ -398,7 +398,7 @@ function showResult(idx: number, optionId: string | null, score: number, quality
 // ---------- end ----------
 
 function shareText(total: number, top: number, recs: RoundRecord[]) {
-  return `Outwitly #${DAY.puzzleNumber} · ${total}/500 · Top ${top}%\n${recs.map((r) => square(r.quality)).join('')}\noutwitly.example`;
+  return `Outwitly #${DAY.puzzleNumber} · ${total}/500 · Top ${top}%\n${recs.map((r) => square(r.quality)).join('')}\njoel1050.github.io/outwitly`;
 }
 
 /** Copy to the clipboard. Falls back to a hidden textarea where the Clipboard API is blocked (file:// pages, old browsers). */

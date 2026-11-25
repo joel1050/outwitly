@@ -23,7 +23,6 @@ const state = {
   stage: null as Stage | null,
   selected: null as string | null,
   homeTick: 0,
-  onLock: null as null | (() => void),
   onNext: null as null | (() => void),
   select: null as null | ((n: number) => void),
   skip: null as null | (() => void),
@@ -85,7 +84,7 @@ function howToPlay() {
     <ol class="how">
       <li>Each round is one decision in a small scene shared with cartoon characters.</li>
       <li>Every character follows the rule on its card, every time. Tap a card to read it.</li>
-      <li>Pick an option, then <b>Lock in</b>. One try per round. Keys: <kbd>1</kbd>–<kbd>4</kbd> to pick, <kbd>Enter</kbd> to lock in.</li>
+      <li>Tap an option to play it. One try per round, so read the cards first. Keys: <kbd>1</kbd>–<kbd>4</kbd>.</li>
       <li>Best move scores 100. Other moves earn partial credit. There’s no clock, so take your time.</li>
     </ol>
     <p class="muted">Five rounds a day: two easy, two medium, one hard.</p>`, 'How to play');
@@ -140,9 +139,11 @@ function teardown() {
   clearInterval(state.homeTick);
   state.stage?.destroy();
   state.stage = null;
-  state.onLock = state.onNext = state.select = state.skip = null;
+  state.onNext = state.select = state.skip = null;
   gsap.globalTimeline.timeScale(baseScale());
   setSuppressed(false);
+  // Each screen starts at its top; otherwise a phone keeps the last screen's scroll and hides the header.
+  window.scrollTo(0, 0);
 }
 
 function dayTotal(recs: RoundRecord[]) { return recs.reduce((a, r) => a + r.score, 0); }
@@ -198,7 +199,7 @@ export function renderHome() {
     tick();
     state.homeTick = window.setInterval(tick, 1000);
   }
-  (root.querySelector('.btn.primary') as HTMLElement)?.focus();
+  (root.querySelector('.btn.primary') as HTMLElement)?.focus({ preventScroll: true });
 }
 
 // ---------- round ----------
@@ -242,8 +243,10 @@ function startRound(idx: number) {
         ${controls()}
       </header>
       <p class="setup">${esc(type.setup(round))}</p>
-      <div class="scene-wrap">
-        <button class="skip btn small" hidden>Skip ›</button>
+      <div class="scene-slot">
+        <div class="scene-wrap">
+          <button class="skip btn small" hidden>Skip ›</button>
+        </div>
       </div>
       <section class="panel">
         <div class="cards">${cardsHtml(round)}</div>
@@ -252,7 +255,6 @@ function startRound(idx: number) {
           ${opts.map((o, i) => `<button class="option" role="radio" aria-checked="false" data-opt="${o.id}" disabled>
             <kbd>${i + 1}</kbd><span class="opt-label">${esc(o.label)}</span>${o.detail ? `<span class="opt-detail">${esc(o.detail)}</span>` : ''}</button>`).join('')}
         </div>
-        <button class="btn primary lock" disabled>Lock in</button>
       </section>
       <div class="sr-only" aria-live="polite" id="live"></div>
     </main>`;
@@ -262,7 +264,7 @@ function startRound(idx: number) {
   const sceneWrap = root.querySelector<HTMLElement>('.scene-wrap')!;
   const stage = createStage(round, sceneWrap);
   state.stage = stage;
-  gsap.from(root.querySelectorAll('.card, .option, .lock'), { y: 16, opacity: 0, stagger: 0.04, duration: 0.3, ease: 'power2.out', clearProps: 'all' });
+  gsap.from(root.querySelectorAll('.card, .option'), { y: 16, opacity: 0, stagger: 0.04, duration: 0.3, ease: 'power2.out', clearProps: 'all' });
 
   stage.intro().then(() => {
     if (state.stage !== stage) return;
@@ -271,37 +273,47 @@ function startRound(idx: number) {
     (root.querySelector('.option') as HTMLElement)?.focus({ preventScroll: true });
   });
 
-  const lockBtn = root.querySelector<HTMLButtonElement>('.lock')!;
-  const select = (id: string) => {
+  // One tap commits. There is no separate lock-in step.
+  const choose = (id: string) => {
     if (state.phase !== 'decide') return;
     state.selected = id;
-    sfx('select');
     root.querySelectorAll<HTMLElement>('.option').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.opt === id)));
-    const o = opts.find((x) => x.id === id)!;
-    lockBtn.disabled = false;
-    lockBtn.textContent = `Lock in: ${o.label}`;
+    sfx('lock');
+    finishRound(idx, id);
+  };
+  const optionsEl = root.querySelector<HTMLElement>('.options')!;
+  optionsEl.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('.option');
+    if (b) choose(b.dataset.opt!);
+  });
+  // With a mouse, hovering an option previews it in the scene. Touch has no hover, so phones skip this.
+  let hovered: string | null = null;
+  const hover = (id: string | null) => {
+    if (state.phase !== 'decide' || id === hovered) return;
+    hovered = id;
     stage.setPreview(id);
   };
-  root.querySelector('.options')!.addEventListener('click', (e) => {
-    const b = (e.target as HTMLElement).closest<HTMLElement>('.option');
-    if (b) select(b.dataset.opt!);
+  optionsEl.addEventListener('pointerover', (e) => {
+    if (e.pointerType === 'mouse') hover((e.target as HTMLElement).closest<HTMLElement>('.option')?.dataset.opt ?? null);
   });
+  optionsEl.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') hover(null); });
   root.querySelector('.cards')!.addEventListener('click', (e) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>('.card');
     if (b) cardModal(b.dataset.card!, b.dataset.rule!, b.dataset.badge!);
   });
-  state.onLock = () => {
-    if (state.phase !== 'decide' || !state.selected) return;
-    sfx('lock');
-    finishRound(idx, state.selected);
-  };
-  lockBtn.addEventListener('click', () => state.onLock?.());
   state.select = (n: number) => {
     const o = opts[n];
-    if (!o) return;
-    select(o.id);
-    root.querySelector<HTMLElement>(`.option[data-opt="${o.id}"]`)?.focus({ preventScroll: true });
+    if (o) choose(o.id);
   };
+}
+
+/** On very short screens the page can still scroll; bring the whole scene into view for the playout. */
+function showWholeScene() {
+  const scene = root.querySelector<HTMLElement>('.scene-wrap');
+  if (!scene) return;
+  const r = scene.getBoundingClientRect();
+  if (r.top >= 0 && r.bottom <= window.innerHeight) return;
+  scene.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
 }
 
 async function finishRound(idx: number, optionId: string) {
@@ -316,8 +328,9 @@ async function finishRound(idx: number, optionId: string) {
   store.addRecord(DAY.puzzleNumber, { round: round.index, optionId, msRemaining: 0, score, quality });
 
   const panel = root.querySelector<HTMLElement>('.panel')!;
-  root.querySelectorAll<HTMLButtonElement>('.option, .lock').forEach((b) => (b.disabled = true));
+  root.querySelectorAll<HTMLButtonElement>('.option').forEach((b) => (b.disabled = true));
   panel.classList.add('dim');
+  showWholeScene();
 
   {
     const skip = root.querySelector<HTMLButtonElement>('.skip')!;
@@ -356,6 +369,7 @@ function showResult(idx: number, optionId: string | null, score: number, quality
   const sq = square(quality);
   const isLast = idx === N - 1;
   panel.classList.remove('dim');
+  root.querySelector('.round')?.classList.add('done');
   panel.innerHTML = `
     <div class="result">
       <div class="res-head">
@@ -492,7 +506,7 @@ function renderEnd() {
   gsap.from(root.querySelectorAll('.big-sq span'), { scale: 0, duration: 0.35, stagger: 0.1, delay: 0.4, ease: 'back.out(3)' });
   gsap.from(root.querySelectorAll('.bell .bar'), { scaleY: 0, transformOrigin: '50% 100%', duration: 0.5, stagger: 0.008 });
   if (total >= 400) sfx('cheer');
-  (root.querySelector('[data-action="share"]') as HTMLElement).focus();
+  (root.querySelector('[data-action="share"]') as HTMLElement).focus({ preventScroll: true });
   state.share = async () => {
     const txt = shareText(total, top, recs);
     toast(await copyText(txt) ? 'Result copied' : txt);
@@ -548,12 +562,13 @@ export function boot() {
     if (e.key === 'Enter') {
       const t = e.target as HTMLElement;
       // Let other buttons (cards, mute, settings) keep their own Enter behaviour.
-      if (t.closest?.('button') && !t.closest('.option, .lock, .next, .skip')) return;
+      if (t.closest?.('button') && !t.closest('.option, .next, .skip')) return;
       if (state.phase === 'decide') {
-        e.preventDefault();
         const opt = t.closest?.('.option') as HTMLElement | null;
-        if (opt && opt.dataset.opt !== state.selected) state.select?.([...root.querySelectorAll('.option')].indexOf(opt));
-        else state.onLock?.();
+        if (opt) {
+          e.preventDefault();
+          state.select?.([...root.querySelectorAll('.option')].indexOf(opt));
+        }
       } else if (state.phase === 'result') {
         e.preventDefault();
         state.onNext?.();

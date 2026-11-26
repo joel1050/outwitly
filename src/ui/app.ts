@@ -340,9 +340,7 @@ function startClock(idx: number, limitMs: number) {
     if (sec !== shown) {
       shown = sec;
       const inGrace = elapsed < GRACE_MS;
-      label.innerHTML = inGrace
-        ? `<b>${clock(left)}</b>`
-        : `<b>${clock(left)}</b> · ${Math.round(speedFactor(elapsed, limitMs) * 100)}% points`;
+      label.innerHTML = `<b>${clock(left)}</b>`;
       row.classList.toggle('grace', inGrace);
       row.classList.toggle('hot', left <= 30_000);
       if (left > 0 && left <= 10_000) sfx('tick');

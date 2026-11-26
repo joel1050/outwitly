@@ -227,7 +227,7 @@ kbd {
 .timer-row.hot .fuse-burn { background: repeating-linear-gradient(-45deg, var(--hot) 0 6px, #d06c26 6px 12px); }
 /* Where full points end: the fuse burns right to left, so the grace period is the right-hand slice. */
 .grace-mark { position: absolute; top: -4px; bottom: -4px; width: 3px; margin-left: -1.5px; background: var(--line); border-radius: 2px; }
-.timer-label { font-size: 13px; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 11.5em; text-align: right; }
+.timer-label { font-size: 13px; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 2.6em; text-align: right; }
 .timer-label b { color: var(--ink); font-size: 15px; }
 .timer-row.hot .timer-label b { color: var(--hot); }
 

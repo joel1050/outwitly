@@ -1,11 +1,11 @@
 import { gsap } from 'gsap';
-import { CHARACTERS, leadingProject } from '../../../../src/engine/characters';
-import type { TimelineEvent } from '../../../../src/engine/types';
-import logic, { type RollCallParams } from '../../../../src/games/roll-call/logic';
-import { sfx } from '../../../../src/render/audio';
-import { confetti, shake, sparkle } from '../../../../src/render/fx';
-import { Stage, W } from '../../../../src/render/stage';
-import { OUTLINE, reducedMotion, s, text, wait } from '../../../../src/render/svg';
+import { CHARACTERS, leadingProject } from '../../engine/characters';
+import type { TimelineEvent } from '../../engine/types';
+import logic, { type RollCallParams } from './logic';
+import { sfx } from '../../render/audio';
+import { confetti, shake, sparkle } from '../../render/fx';
+import { Stage, W } from '../../render/stage';
+import { OUTLINE, reducedMotion, s, text, wait } from '../../render/svg';
 
 const ol = (w = 3) => ({ stroke: OUTLINE, 'stroke-width': w, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' });
 const ORDINAL = ['1st', '2nd', '3rd', '4th'];
@@ -39,7 +39,6 @@ const STYLES = `
   .roll-call-pref-bg { fill: #fff; }
   .roll-call-pref-top { fill: #ffe07a; }
   .roll-call-pref-text { font-size: 9.5px; fill: #2b2a33; }
-  .roll-call-voter-num { font-size: 9px; fill: var(--ink); opacity: 0.75; }
   .roll-call-chip-text { font-size: 8.5px; fill: #2b2a33; }
   .roll-call-chip-text-light { font-size: 8.5px; fill: #fffdf8; }
   .roll-call-preview-box { fill: none; stroke: var(--primary); stroke-width: 3; stroke-dasharray: 8 4; }
@@ -228,8 +227,6 @@ export class RollCallStage extends Stage {
     this.voterOrder.forEach((id, i) => {
       const vx = vStart + i * vStep;
       this.addActor(id, vx, ACTOR_Y, actorScale);
-      const labelStr = id === 'you' ? '1. You' : `${i + 1}. ${CHARACTERS[id]?.name ?? id}`;
-      text(this.props, vx, ACTOR_Y + 13, labelStr, { class: 'roll-call-voter-num' });
     });
 
     this.svg.setAttribute('aria-label', logic.setup(this.round));

@@ -120,6 +120,8 @@ Use this template for each scenario:
 2. **Choose and improve.** The owner picks the best three (easy, medium, hard) and works on the wording and numbers until they are right.
 3. **Build.** Once the owner says yes, Opus builds what is missing: the game type's logic and scene if the scenario isn't live yet, the round files in `content/rounds/`, and the schedule entry. `npm run rounds` and `npm test` must pass, and the rounds are played in the app before they go live.
 
+   To compare several takes on a scene, put each in `dev/compare/variants/<type>/<letter>.ts` (imports point at `../../../../src/`) and open `/dev/compare/` on the dev server. Each variant plays in its own frame, and one click plays an option in all of them. Copy the winner to `src/games/<type>/scene.ts` and delete the variants. The page is for development only and never reaches the build.
+
 Candidates are drafts. Nothing in `content/candidates/` reaches the game.
 
 ## Round files

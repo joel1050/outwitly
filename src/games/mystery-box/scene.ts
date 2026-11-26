@@ -1,11 +1,11 @@
 import { gsap } from 'gsap';
-import { CHARACTERS } from '../../../../src/engine/characters';
-import type { TimelineEvent } from '../../../../src/engine/types';
-import logic, { type MysteryBoxParams } from '../../../../src/games/mystery-box/logic';
-import { sfx } from '../../../../src/render/audio';
-import { coinArc, confetti, shake, sparkle } from '../../../../src/render/fx';
-import { Stage, W } from '../../../../src/render/stage';
-import { OUTLINE, reducedMotion, s, text, wait } from '../../../../src/render/svg';
+import { CHARACTERS } from '../../engine/characters';
+import type { TimelineEvent } from '../../engine/types';
+import logic, { type MysteryBoxParams } from './logic';
+import { sfx } from '../../render/audio';
+import { coinArc, confetti, shake, sparkle } from '../../render/fx';
+import { Stage, W } from '../../render/stage';
+import { OUTLINE, reducedMotion, s, text, wait } from '../../render/svg';
 
 const ol = (w = 3) => ({ stroke: OUTLINE, 'stroke-width': w, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' });
 const CRATE_Y = 106;
@@ -36,7 +36,6 @@ const STYLES = `
   .mystery-box-gain-text { font-size: 10.5px; fill: #2b2a33; }
   .mystery-box-wallet-bg { fill: #fff4d6; }
   .mystery-box-wallet-text { font-size: 10px; fill: #2b2a33; }
-  .mystery-box-actor-label { font-size: 9.5px; fill: var(--ink); opacity: 0.78; }
   .mystery-box-paddle { fill: #ece6ff; }
   .mystery-box-paddle-text { font-size: 11px; fill: #2b2a33; }
   .is-best .mystery-box-paddle { fill: var(--gold); }
@@ -184,8 +183,6 @@ export class MysteryBoxStage extends Stage {
     this.actorIds.forEach((id, i) => {
       const ax = aStart + i * aStep;
       this.addActor(id, ax, ACTOR_Y, aScale);
-      const name = id === 'you' ? 'You' : (CHARACTERS[id]?.name ?? id);
-      text(this.props, ax, ACTOR_Y + 11, name, { class: 'mystery-box-actor-label' });
     });
 
     this.svg.setAttribute('aria-label', logic.setup(this.round));

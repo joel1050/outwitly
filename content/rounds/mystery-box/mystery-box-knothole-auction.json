@@ -23,7 +23,7 @@
       }
     ],
     "obvious": "bid90",
-    "explanation": "Bid 105. Greedy bids 100 when the box holds 160, so any lower bid loses the big prize and leaves you only the poor boxes."
+    "explanation": "Greedy bids 100 when the box holds 160, so any lower bid loses the big prize and leaves you only the poor boxes."
   },
   "characters": [
     {

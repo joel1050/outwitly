@@ -1,11 +1,11 @@
 import { gsap } from 'gsap';
-import { CHARACTERS } from '../../../../src/engine/characters';
-import type { CookieTray, TimelineEvent } from '../../../../src/engine/types';
-import logic, { type CookieCutParams } from '../../../../src/games/cookie-cut/logic';
-import { sfx } from '../../../../src/render/audio';
-import { burst, shake, sparkle, tag } from '../../../../src/render/fx';
-import { Stage, W } from '../../../../src/render/stage';
-import { OUTLINE, reducedMotion, s, text, wait } from '../../../../src/render/svg';
+import { CHARACTERS } from '../../engine/characters';
+import type { CookieTray, TimelineEvent } from '../../engine/types';
+import logic, { type CookieCutParams } from './logic';
+import { sfx } from '../../render/audio';
+import { burst, shake, sparkle, tag } from '../../render/fx';
+import { Stage, W } from '../../render/stage';
+import { OUTLINE, reducedMotion, s, text, wait } from '../../render/svg';
 
 const ol = (w = 3) => ({ stroke: OUTLINE, 'stroke-width': w, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' });
 const ROW_Y = 148;

@@ -17,7 +17,7 @@
       1,
       1
     ],
-    "explanation": "Cut after 3. Greedy grabs the tray with five cookies, so you keep both chocolates and a plain cookie."
+    "explanation": "Greedy grabs the tray with five cookies, so you keep both chocolates and a plain cookie."
   },
   "characters": [
     {

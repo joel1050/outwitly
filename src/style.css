@@ -503,19 +503,34 @@ hr { border: 0; border-top: 2px dashed var(--panel-2); margin: 16px 0 6px; }
   .round .setup { line-height: 1.3; }
 }
 
-/* Wide screens: scene on the left, cards and options on the right. */
+/* Wide screens: the round fills the window. The scene takes all the room the text leaves and
+   scales to fit it; cards and options sit in a fixed-width column on the right. */
 @media (min-width: 900px) {
   .round.screen {
-    max-width: 1080px;
+    max-width: 1760px;
+    height: 100dvh; min-height: 0;
+    padding: 0 32px 24px;
     display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) clamp(360px, 30vw, 480px);
+    grid-template-rows: auto auto auto minmax(0, 1fr);
     grid-template-areas: 'bar bar' 'fuse fuse' 'setup setup' 'scene panel';
-    column-gap: 24px;
-    align-content: start;
+    column-gap: 28px;
   }
   .round .bar { grid-area: bar; }
   .round .timer-row { grid-area: fuse; }
-  .round .setup { grid-area: setup; font-size: 17px; }
-  .round .scene-slot { grid-area: scene; align-self: start; }
-  .round .panel { grid-area: panel; margin-top: 0; }
+  .round .setup { grid-area: setup; font-size: 18px; max-width: 75ch; }
+  .round .goal { font-size: 20px; }
+  .round .scene-slot {
+    grid-area: scene; min-height: 0;
+    container-type: size;
+    display: flex; justify-content: center; align-items: flex-start;
+    padding-bottom: 6px; /* room for the scene's drop shadow */
+  }
+  .round .scene-slot .scene-wrap { width: min(100cqw, 133.333cqh); }
+  .round .panel {
+    grid-area: panel; margin-top: 0; min-height: 0;
+    overflow-y: auto; padding: 0 4px 6px; margin-inline: -4px;
+  }
+  /* On short windows the result scrolls inside the panel; Next stays in reach. */
+  .round .next { position: sticky; bottom: 4px; z-index: 5; }
 }

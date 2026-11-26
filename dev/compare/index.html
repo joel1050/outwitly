@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scene Compare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root { --bg: #FBF3E6; --ink: #2B2A33; --soft: #6b6672; --line: #e2d6c2; --card: #fff; --accent: #E69F00; }
+      @media (prefers-color-scheme: dark) { :root:not([data-theme='light']) { --bg: #1f1d24; --ink: #f2ece2; --soft: #a9a2b0; --line: #3a3642; --card: #2a2730; } }
+      :root[data-theme='dark'] { --bg: #1f1d24; --ink: #f2ece2; --soft: #a9a2b0; --line: #3a3642; --card: #2a2730; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 Nunito, system-ui, sans-serif; }
+      header { padding: 16px 20px 8px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+      h1 { font: 600 20px Fredoka, sans-serif; margin: 0 12px 0 0; }
+      .tabs, .tools { display: flex; gap: 6px; flex-wrap: wrap; }
+      button { font: 700 14px Nunito, sans-serif; color: var(--ink); background: var(--card); border: 2px solid var(--line); border-radius: 10px; padding: 7px 12px; cursor: pointer; }
+      button[aria-pressed='true'] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, var(--card)); }
+      .brief { padding: 0 20px; max-width: 1100px; color: var(--soft); }
+      .brief b { color: var(--ink); }
+      .opts { padding: 10px 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 8px 20px 24px; }
+      @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+      .col { background: var(--card); border: 2px solid var(--line); border-radius: 14px; overflow: hidden; }
+      .col h2 { font: 600 18px Fredoka, sans-serif; margin: 0; padding: 8px 12px; display: flex; justify-content: space-between; }
+      .col h2 small { font: 700 12px Nunito, sans-serif; color: var(--soft); }
+      iframe { display: block; width: 100%; aspect-ratio: 4 / 3; border: 0; }
+      .hint { color: var(--soft); font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Scene compare</h1>
+      <div class="tabs" id="tabs"></div>
+      <div class="tools">
+        <button id="reset">Reset</button>
+        <button id="slow" aria-pressed="false">Half speed</button>
+        <button id="theme">Theme: auto</button>
+      </div>
+    </header>
+    <div class="brief" id="brief"></div>
+    <div class="opts" id="opts"></div>
+    <div class="grid" id="grid"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

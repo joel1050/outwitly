@@ -280,12 +280,12 @@ kbd {
 .option {
   position: relative;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
-  min-height: 62px; padding: 16px 6px 8px;
+  min-height: 62px; padding: 20px 6px 7px; /* top strip keeps a wrapped label clear of the number badge */
   border-radius: 14px; border: 2.5px solid var(--line);
   background: var(--panel); box-shadow: 0 3px 0 var(--line);
   transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, background 0.15s;
 }
-.option kbd { position: absolute; left: 6px; top: 5px; font-size: 10px; }
+.option kbd { position: absolute; left: 5px; top: 4px; font-size: 10px; line-height: 1; padding: 1px 3px; }
 .option:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 var(--line); }
 .option[aria-checked='true'] { background: var(--gold); color: #2b2a33; transform: translateY(1px); box-shadow: 0 2px 0 var(--line); }
 .option:disabled { opacity: 0.6; }
@@ -468,7 +468,7 @@ hr { border: 0; border-top: 2px dashed var(--panel-2); margin: 16px 0 6px; }
   .card-rule { font-size: 12px; }
   /* Once the round is over the intro text has done its job; give the room to the result. */
   .round.done .setup, .round.done .timer-row { display: none; }
-  .option { min-height: 50px; padding: 13px 6px 6px; }
+  .option { min-height: 50px; padding: 20px 6px 5px; }
   .opt-label { font-size: 18px; }
   /* Fallback for screens too short to fit everything: Next stays in reach. */
   .next {
@@ -496,7 +496,7 @@ hr { border: 0; border-top: 2px dashed var(--panel-2); margin: 16px 0 6px; }
 @media (max-width: 899px) and (max-height: 620px) {
   .round .bar { min-height: 40px; }
   .round .setup { font-size: 13px; margin-bottom: 6px; }
-  .option { min-height: 46px; padding: 12px 6px 5px; }
+  .option { min-height: 46px; padding: 20px 6px 4px; }
   .opt-label { font-size: 17px; }
   .round .panel { gap: 6px; }
   .scene-slot { min-height: 76px; }

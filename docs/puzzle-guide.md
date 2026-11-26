@@ -114,6 +114,14 @@ Use this template for each scenario:
 - **Difficulty range:** which settings make it easy, medium or hard.
 ```
 
+## Making a new day
+
+1. **Draft six candidates.** GPT-6.2 Sol (high) and Gemini 4 Neon (xhigh) each write three rounds: one easy, one medium, one hard. Split the approved scenarios between them so no scenario appears twice. Each round is text only: what the player sees, the result line for every option, the "Best:" explanation, how to solve it, why the other options lose, the numbers and checks, draft round data, and a script's proof. They go in `content/candidates/<date>/<round-id>.md`.
+2. **Choose and improve.** The owner picks the best three (easy, medium, hard) and works on the wording and numbers until they are right.
+3. **Build.** Once the owner says yes, Opus builds what is missing: the game type's logic and scene if the scenario isn't live yet, the round files in `content/rounds/`, and the schedule entry. `npm run rounds` and `npm test` must pass, and the rounds are played in the app before they go live.
+
+Candidates are drafts. Nothing in `content/candidates/` reaches the game.
+
 ## Round files
 
 A round is one JSON file, `content/rounds/<type>/<id>.json`. The file name is the id.

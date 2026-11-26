@@ -17,7 +17,7 @@ export interface Settings {
 interface Saved {
   deviceId: string;
   settings: Settings;
-  days: Record<number, { records: RoundRecord[] }>;
+  days: Record<string, { records: RoundRecord[] }>;
 }
 
 const KEY = 'outwit:v1';
@@ -35,7 +35,15 @@ let data: Saved = load();
 function load(): Saved {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return { ...fresh(), ...JSON.parse(raw) };
+    if (raw) {
+      const saved: Saved = { ...fresh(), ...JSON.parse(raw) };
+      // The only day saved before ids was the five-round demo at index 0.
+      if (saved.days['0']) {
+        saved.days['0.1'] ??= saved.days['0'];
+        delete saved.days['0'];
+      }
+      return saved;
+    }
   } catch { /* storage blocked: play without saving */ }
   return fresh();
 }
@@ -47,11 +55,11 @@ function save() {
 export const store = {
   get settings() { return data.settings; },
   setSettings(p: Partial<Settings>) { data.settings = { ...data.settings, ...p }; save(); },
-  records(day: number): RoundRecord[] { return data.days[day]?.records ?? []; },
-  addRecord(day: number, r: RoundRecord) {
+  records(day: string): RoundRecord[] { return data.days[day]?.records ?? []; },
+  addRecord(day: string, r: RoundRecord) {
     const d = (data.days[day] ??= { records: [] });
     if (!d.records.some((x) => x.round === r.round)) d.records.push(r);
     save();
   },
-  resetDay(day: number) { delete data.days[day]; save(); },
+  resetDay(day: string) { delete data.days[day]; save(); },
 };

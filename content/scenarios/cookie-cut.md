@@ -5,27 +5,14 @@
 - **Source:** GPT-6.2 Sol (high) proposal, 2026-11-25. Original: `docs/proposals/gpt-6.2-sol.md`.
 - **Status:** see `content/catalog.json`
 
-- **Story**  
-  You cut a row of cookies into two trays, then Greedy takes one.
-- **Goal**  
-  Keep the cookies worth the most points. Higher is better.
-- **Setup**  
-  Cut ten cookies once. The leftmost two are chocolate, worth 4 points each. Plain cookies score one. Greedy sees your cut, takes one section, and leaves you the other.
-- **Your choice**  
-  Cut after cookie 1, 4, or 5, counting from the left.
-- **Characters and rules**
-  - Greedy — Takes the section with more cookies, left on ties.
-- **How it resolves**  
-  For a cut after cookie k, compare the first k cookies with the remaining cookies by count. Give Greedy the larger count, or the left section on equality. Sum the point values of your remaining section. Cuts are only between cookies.
-- **Trap**  
-  The middle cut gives Greedy the left tray with both chocolate cookies.
-- **Idea**  
-  Give away quantity and keep quality.
-- **Can vary**  
-  Use 8–14 cookies with two to five chocolate cookies in any positions, chocolate values of 3–7, and three distinct cuts. Keep at least one cut on each side of, or at, the middle. Include rounds with clustered treats and scattered treats. Sometimes the closest cut to even also keeps every chocolate cookie, tagged “Keep the biggest good tray.”
-- **Scene**  
-  Drop a divider between cookies. Greedy slides one tray away and the remaining cookies show their points.
-- **Difficulty range**  
-  Easy with chocolate cookies clustered at one end. Medium with several small groups and three plausible cuts.
-- **Rating**  
-  Fun 4/5 · Round variety 4/5. Counting cookies and counting points give different answers, and the location of each chocolate cookie can change the best cut.
+You cut a row of cookies into two trays, then Greedy takes one.
+
+- **Goal** — Keep the cookies worth the most points.
+- **Setup** — Eight cookies sit in a row. The two on the left are chocolate, worth 3 points each. The rest are plain, worth 1. You cut the row into two trays. Greedy takes one tray and you get the other.
+- **Your choice** — Cut after cookie 1, 3 or 4, counting from the left.
+- **Greedy** — Takes the tray with more cookies; the left tray on a tie.
+- **How it resolves** — The cut divides the ordered `cookiePoints` list. Greedy takes the tray with more cookies. Your score uses the points on the tray that remains.
+- **Round results** — Cut after 1 to keep 3 points, after 3 to keep 7, or after 4 to keep 4. Greedy takes the left tray on the middle cut, so that cut loses both chocolates.
+- **Idea** — Keep the smaller tray with both chocolates and a plain cookie.
+- **Can vary** — Change the point values, their order and the cuts offered. Cluster high-value cookies for easy rounds, or spread them across the row for harder rounds.
+- **Scene** — Drop a divider between cookies. Greedy slides one tray away and the remaining cookies show their points.

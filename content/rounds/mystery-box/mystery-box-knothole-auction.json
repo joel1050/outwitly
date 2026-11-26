@@ -1,0 +1,49 @@
+{
+  "id": "mystery-box-knothole-auction",
+  "type": "mystery-box",
+  "difficulty": "hard",
+  "idea": "outbid-the-peeker-on-the-big-box",
+  "status": "ready",
+  "source": "hand",
+  "notes": "Bid 105 beats the 100-coin bid on the richest box, which comes up half the time.",
+  "params": {
+    "wallet": 120,
+    "boxes": [
+      {
+        "contents": 60,
+        "chance": "1/4"
+      },
+      {
+        "contents": 100,
+        "chance": "1/4"
+      },
+      {
+        "contents": 160,
+        "chance": "1/2"
+      }
+    ],
+    "obvious": "bid90",
+    "explanation": "Bid 105. Greedy bids 100 when the box holds 160, so any lower bid loses the big prize and leaves you only the poor boxes."
+  },
+  "characters": [
+    {
+      "id": "cautious",
+      "ruleKey": "bidHalfContents"
+    },
+    {
+      "id": "greedy",
+      "ruleKey": "bidBelowContents",
+      "ruleArgs": {
+        "discount": 60
+      }
+    }
+  ],
+  "options": {
+    "bids": [
+      0,
+      40,
+      90,
+      105
+    ]
+  }
+}

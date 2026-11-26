@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { bestPossible } from '../games/pirates/logic';
 import { optionChance } from '../games/duel/logic';
 import { PUZZLES } from '../games/registry';
-import { dailySetFor } from './content';
+import { dailySetById } from './content';
 import { gradeRound, roundScore, speedFactor } from './scoring';
 
-const SAMPLE_DAY = dailySetFor('2026-11-25');
+const SAMPLE_DAY = dailySetById('0.1')!;
 
 // Spec appendix fixtures.
 const EXPECTED: Record<number, Record<string, { value: number; quality: number; winner?: string }>> = {
@@ -85,5 +85,19 @@ describe('sample day fixtures', () => {
 
   it('the agenda goal names your top two', () => {
     expect(PUZZLES.agenda.goal(SAMPLE_DAY.rounds[3])).toBe('Get the Garden built. Second best: the Fountain.');
+  });
+});
+
+describe('day 0.2 fixtures', () => {
+  it('mystery box returns exact expected coins and grades from the worst bid', () => {
+    const round = dailySetById('0.2')!.rounds[2];
+    const { graded, bestId } = gradeRound(round);
+    expect(bestId).toBe('bid105');
+    expect(graded.map(({ optionId, outcome, quality }) => [optionId, outcome.exact, outcome.value, quality])).toEqual([
+      ['pass', '120', 120, 0.25],
+      ['bid40', '125', 125, 0.5],
+      ['bid90', '115', 115, 0],
+      ['bid105', '135', 135, 1],
+    ]);
   });
 });

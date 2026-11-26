@@ -6,6 +6,7 @@
 export interface ChestCtx { chests: number[]; picks: Record<string, number> }
 export interface VoteCtx { shares: number[]; mine: number }
 export interface DuelCtx { self: string; alive: string[]; accuracy: Record<string, number> }
+export interface ProjectVoteCtx { projects: string[]; tally: Record<string, number>; ballots: Record<string, string> }
 
 type RuleFn = (args: any, ctx: any) => any;
 
@@ -20,6 +21,10 @@ export interface CharacterDef {
 }
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+export function leadingProject(projects: string[], tally: Record<string, number>): string {
+  return projects.reduce((best, project) => tally[project] > tally[best] ? project : best);
+}
 
 function occupancy(ctx: ChestCtx): number[] {
   const occ = ctx.chests.map(() => 0);
@@ -61,11 +66,17 @@ export const CHARACTERS: Record<string, CharacterDef> = {
       ...sharedRules,
       biggest: (_: unknown, ctx: ChestCtx) => biggest(ctx),
       yesIfAtLeast: (a: { min: number }, ctx: VoteCtx) => ctx.mine >= a.min,
+      moreCookies: (_: unknown, ctx: { left: number; right: number }) => ctx.left >= ctx.right ? 'left' : 'right',
+      fixedProject: (a: { project: string }) => a.project,
+      bidBelowContents: (a: { discount: number }, ctx: { contents: number }) => Math.max(0, ctx.contents - a.discount),
     },
     cardText: {
       ...sharedText,
       biggest: () => 'Takes the biggest chest, even if others are on it.',
       yesIfAtLeast: (a: { min: number }) => `Votes yes only if it gets ${a.min} gold or more.`,
+      moreCookies: () => 'Takes the tray with more cookies; the left tray on a tie.',
+      fixedProject: (a: { project: string }) => `Always votes for the ${title(a.project)}.`,
+      bidBelowContents: (a: { discount: number }) => `Peeks inside, then bids ${a.discount} less than the box holds.`,
     },
   },
   copycat: {
@@ -73,9 +84,11 @@ export const CHARACTERS: Record<string, CharacterDef> = {
     personality: 'Does whatever someone else did.',
     rules: {
       copy: (a: { target: string }, ctx: ChestCtx) => ctx.picks[a.target],
+      copyVote: (a: { target: string }, ctx: ProjectVoteCtx) => ctx.ballots[a.target],
     },
     cardText: {
       copy: (a: { target: string }) => `Picks the same chest as ${CHARACTERS[a.target]?.name ?? a.target}.`,
+      copyVote: (a: { target: string }) => `Votes the same as ${CHARACTERS[a.target]?.name ?? a.target}.`,
     },
   },
   showoff: {
@@ -83,6 +96,7 @@ export const CHARACTERS: Record<string, CharacterDef> = {
     personality: 'Joins whatever’s most popular.',
     rules: {
       ...sharedRules,
+      mostVotes: (_: unknown, ctx: ProjectVoteCtx) => leadingProject([...ctx.projects].reverse(), ctx.tally),
       mostOccupied: (_: { tieBreak: 'bigger' }, ctx: ChestCtx) => {
         const occ = occupancy(ctx);
         let best = 0;
@@ -94,6 +108,7 @@ export const CHARACTERS: Record<string, CharacterDef> = {
     },
     cardText: {
       ...sharedText,
+      mostVotes: () => 'Votes for the project with the most votes; rightmost on a tie.',
       mostOccupied: () => 'Joins the chest with the most characters on it, you included.',
     },
   },
@@ -101,13 +116,18 @@ export const CHARACTERS: Record<string, CharacterDef> = {
     id: 'loner', name: 'Loner', color: '#3D5A80', accent: '#1C2C44',
     personality: 'Avoids everyone.',
     rules: {
+      fewestVotes: (_: unknown, { projects, tally }: ProjectVoteCtx) =>
+        projects.reduce((best, project) => tally[project] < tally[best] ? project : best),
       biggestEmpty: (_: unknown, ctx: ChestCtx) => {
         const occ = occupancy(ctx);
         const i = biggest(ctx, (j) => occ[j] === 0);
         return i >= 0 ? i : biggest(ctx);
       },
     },
-    cardText: { biggestEmpty: () => 'Takes the biggest chest nobody is on yet.' },
+    cardText: {
+      biggestEmpty: () => 'Takes the biggest chest nobody is on yet.',
+      fewestVotes: () => 'Votes for the project with the fewest votes; leftmost on a tie.',
+    },
   },
   fair: {
     id: 'fair', name: 'Fair', color: '#009E73', accent: '#005A42',
@@ -141,8 +161,14 @@ export const CHARACTERS: Record<string, CharacterDef> = {
   cautious: {
     id: 'cautious', name: 'Cautious', color: '#7FB77E', accent: '#3E6B3D',
     personality: 'Picks the safest option.',
-    rules: { ...sharedRules },
-    cardText: { ...sharedText },
+    rules: {
+      ...sharedRules,
+      bidHalfContents: (_: unknown, ctx: { contents: number }) => ctx.contents / 2,
+    },
+    cardText: {
+      ...sharedText,
+      bidHalfContents: () => 'Peeks inside, then bids half of what the box holds.',
+    },
   },
 };
 

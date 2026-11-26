@@ -1,0 +1,35 @@
+{
+  "id": "cookie-cut-chocolate-pair",
+  "type": "cookie-cut",
+  "difficulty": "easy",
+  "idea": "keep-the-small-sweet-tray",
+  "status": "ready",
+  "source": "hand",
+  "notes": "The middle cut hands both chocolates to Greedy. Cutting after three keeps them and a plain cookie.",
+  "params": {
+    "cookiePoints": [
+      3,
+      3,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "explanation": "Cut after 3. Greedy grabs the tray with five cookies, so you keep both chocolates and a plain cookie."
+  },
+  "characters": [
+    {
+      "id": "greedy",
+      "ruleKey": "moreCookies"
+    }
+  ],
+  "options": {
+    "cuts": [
+      1,
+      3,
+      4
+    ]
+  }
+}

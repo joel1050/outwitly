@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { checkRound, formatReport, passed } from './checks';
-import { ROUND_FILES, SCHEDULE } from './content';
+import { dailySetById, dailySetFor, ROUND_FILES, SCHEDULE } from './content';
 import catalog from '../../content/catalog.json';
 import { PUZZLES } from '../games/registry';
 import type { Difficulty } from './types';
@@ -32,8 +32,18 @@ describe('stored rounds', () => {
 });
 
 describe('schedule', () => {
+  it('has unique day ids', () => {
+    expect(new Set(SCHEDULE.map((day) => day.id)).size).toBe(SCHEDULE.length);
+  });
+
+  it('chooses the later entry when two sets share a date', () => {
+    expect(dailySetFor('2026-11-25').id).toBe('0.2');
+    expect(dailySetById('0.1')?.rounds).toHaveLength(5);
+    expect(dailySetById('0.2')?.rounds.map((r) => r.type)).toEqual(['cookie-cut', 'roll-call', 'mystery-box']);
+  });
+
   it('only uses rounds that exist and are ready', () => {
-    for (const [day, ids] of SCHEDULE) {
+    for (const { id: day, rounds: ids } of SCHEDULE) {
       for (const id of ids) {
         expect(ROUND_FILES[id], `${day}: no round '${id}'`).toBeDefined();
         expect(ROUND_FILES[id].status, `${day}: '${id}' is not ready`).toBe('ready');
@@ -42,7 +52,7 @@ describe('schedule', () => {
   });
 
   it('never repeats a game type within a day, and goes from easier to harder', () => {
-    for (const [day, ids] of SCHEDULE) {
+    for (const { id: day, rounds: ids } of SCHEDULE) {
       const types = ids.map((id) => ROUND_FILES[id].type);
       expect(new Set(types).size, `${day}: ${types.join(', ')}`).toBe(types.length);
       const levels = ids.map((id) => LEVEL[ROUND_FILES[id].difficulty]);
@@ -52,7 +62,7 @@ describe('schedule', () => {
 
   it('never schedules a round twice', () => {
     const seen = new Map<string, string>();
-    for (const [day, ids] of SCHEDULE) {
+    for (const { id: day, rounds: ids } of SCHEDULE) {
       for (const id of ids) {
         expect(seen.get(id), `'${id}' on ${seen.get(id)} and ${day}`).toBeUndefined();
         seen.set(id, day);
@@ -62,14 +72,14 @@ describe('schedule', () => {
 
   it(`keeps the same idea at least ${IDEA_GAP_DAYS} days apart`, () => {
     const last = new Map<string, string>();
-    for (const [day, ids] of SCHEDULE) {
+    for (const { date, rounds: ids } of SCHEDULE) {
       for (const id of ids) {
         const idea = ROUND_FILES[id].idea;
         const prev = last.get(idea);
         if (prev) {
-          expect(dayNumber(day) - dayNumber(prev), `idea '${idea}' on ${prev} and ${day}`).toBeGreaterThanOrEqual(IDEA_GAP_DAYS);
+          expect(dayNumber(date) - dayNumber(prev), `idea '${idea}' on ${prev} and ${date}`).toBeGreaterThanOrEqual(IDEA_GAP_DAYS);
         }
-        last.set(idea, day);
+        last.set(idea, date);
       }
     }
   });

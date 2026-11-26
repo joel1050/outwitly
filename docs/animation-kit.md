@@ -74,7 +74,34 @@ The event list is shared by all game types (`TimelineEvent` in `src/engine/types
 | `move` | The character walks to `spot(to)`, if the scene defines that spot. |
 | `payout` | A `+N` tag pops over the character's head, with a coin sound. |
 
-**Scene-specific events in use:** `open` (chest lid), `split`, `vote`, `tally`, `plank` (pirates), `lever`, `heading`, `trolley` (junction), `matchup`, `ballot`, `winner` (agenda), `throw` (duel). A scene may also handle a shared event itself, for example to send coins flying to a chest instead of showing a tag.
+### Scene-specific events
+
+The original scenes use `open` (chest lid), `split`, `vote`, `tally`, `plank` (pirates), `lever`, `heading`, `trolley` (junction), `matchup`, `ballot`, `winner` (agenda), and `throw` (duel). A scene can also handle a shared event to send coins flying to a chest, for example.
+
+#### Cookie Cut
+
+| Order | Event | Fields and meaning |
+|---|---|---|
+| 1 | `cookie-cut` | `after` is the number of cookies to the left of the cut. |
+| 2 | `cookie-trays` | `left` and `right` each contain `actor` (who gets the tray), `count` (cookies) and `points` (their total). Greedy's `actor` entry marks the tray it chose. |
+| 3 | `emote` | Greedy and the player react together. |
+
+#### Roll Call
+
+| Order | Event | Fields and meaning |
+|---|---|---|
+| 1 | `ballot` | One event per voter, starting with `you`, then cast order. `actor` casts `choice`, the project name. `tally` maps each project name to its running count after the vote. Roll Call always supplies `tally`. |
+| 2 | `project-winner` | `winner` is the project that gets built. `tally` holds the final counts by project name. |
+| 3 | `emote` | The player and all voters react together. |
+
+#### Mystery Box
+
+| Order | Event | Fields and meaning |
+|---|---|---|
+| 1 | `box-case` | One event per possible box, in setup order. `contents` is the coin count, `chance` is an exact fraction string, and `bids` maps each actor ID to its bid (0 means Pass). `winner` is the winning actor ID or `null` if all passed. `price` is the winning bid or 0, and `gain` is the signed change in the player's coins. |
+| 2 | `box-average` | `value` is the weighted average of the player's ending coins. `exact` is the same total as a fraction or integer string. |
+
+Reveal each case in one beat, then show the average. Allow up to two seconds per case for the three-box round to fit in about eight seconds.
 
 ## Building blocks
 

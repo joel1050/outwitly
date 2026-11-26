@@ -3,7 +3,7 @@ import type { DailySet, Round, RoundFile } from './types';
 
 /**
  * Loads the stored content: every round in content/rounds/<type>/<id>.json and
- * the calendar in content/schedule.json (date -> round ids, in play order).
+ * the days in content/schedule.json, with round ids in play order.
  */
 
 export const DEFAULT_TIME_LIMIT_MS = 180_000;
@@ -20,9 +20,8 @@ for (const [path, f] of Object.entries(files)) {
   ROUND_FILES[id] = f;
 }
 
-/** [date, round ids] in date order. A day's puzzle number is its position here. */
-export const SCHEDULE: [string, string[]][] = Object.entries(schedule as Record<string, string[]>)
-  .sort(([a], [b]) => a.localeCompare(b));
+/** Days in date order. When dates match, the later schedule entry is newer. */
+export const SCHEDULE = [...schedule.days].sort((a, b) => a.date.localeCompare(b.date));
 
 export function toRound(f: RoundFile, index: number): Round {
   return {
@@ -43,21 +42,25 @@ export function localDate(d = new Date()): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
-/** The set for a date: that day's entry, else the latest one before it, else the first. */
+/** The last set on or before a date, or the first set before the schedule starts. */
 export function dailySetFor(date: string): DailySet {
-  if (!SCHEDULE.length) throw new Error('content/schedule.json is empty');
-  let i = SCHEDULE.findIndex(([d]) => d === date);
-  if (i < 0) {
-    i = SCHEDULE.findLastIndex(([d]) => d < date);
-    if (i < 0) i = 0;
-  }
-  const [day, ids] = SCHEDULE[i];
+  const day = SCHEDULE.findLast((day) => day.date <= date) ?? SCHEDULE[0];
+  if (!day) throw new Error('content/schedule.json is empty');
+  return buildDay(day);
+}
+
+export function dailySetById(id: string): DailySet | undefined {
+  const day = SCHEDULE.find((day) => day.id === id);
+  return day && buildDay(day);
+}
+
+function buildDay(day: (typeof SCHEDULE)[number]): DailySet {
   return {
-    puzzleNumber: i,
-    date: day,
-    rounds: ids.map((id, k) => {
+    id: day.id,
+    date: day.date,
+    rounds: day.rounds.map((id, k) => {
       const f = ROUND_FILES[id];
-      if (!f) throw new Error(`schedule ${day}: no round '${id}'`);
+      if (!f) throw new Error(`schedule ${day.id}: no round '${id}'`);
       return toRound(f, k + 1);
     }),
   };

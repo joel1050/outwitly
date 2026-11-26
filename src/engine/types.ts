@@ -3,6 +3,12 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export type Emote = 'cheer' | 'sulk' | 'shock' | 'smug' | 'think';
 
+export interface CookieTray {
+  actor: string;
+  count: number;
+  points: number;
+}
+
 export type TimelineEvent =
   | { t: 'move'; actor: string; to: string }
   | { t: 'vote'; actor: string; choice: 'yes' | 'no' }
@@ -18,8 +24,13 @@ export type TimelineEvent =
   | { t: 'tally'; yes: number; needed: number; passed: boolean }
   | { t: 'plank'; actor: string }
   | { t: 'matchup'; a: string; b: string }
-  | { t: 'ballot'; actor: string; choice: string }
-  | { t: 'winner'; winner: string; loser: string; final: boolean };
+  | { t: 'ballot'; actor: string; choice: string; tally?: Record<string, number> }
+  | { t: 'winner'; winner: string; loser: string; final: boolean }
+  | { t: 'cookie-cut'; after: number }
+  | { t: 'cookie-trays'; left: CookieTray; right: CookieTray }
+  | { t: 'project-winner'; winner: string; tally: Record<string, number> }
+  | { t: 'box-case'; contents: number; chance: string; bids: Record<string, number>; winner: string | null; price: number; gain: number }
+  | { t: 'box-average'; value: number; exact: string };
 
 export interface Outcome {
   value: number;
@@ -83,7 +94,7 @@ export interface RoundFile<P = any> {
 }
 
 export interface DailySet {
-  puzzleNumber: number;
+  id: string;
   date: string;
   rounds: Round[];
 }

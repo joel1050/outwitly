@@ -10,7 +10,7 @@ How the game works, the five scenarios in the demo, and how to build a new scena
 | Scenario specs | `content/scenarios/<id>.md` | One sheet per scenario: story, rules, trap, idea, what can vary. |
 | Game type code | `src/games/<id>/` | `logic.ts` (rules and solver) and `scene.ts` (the animation). Found automatically; nothing else to register. |
 | Rounds | `content/rounds/<type>/<id>.json` | One file per round. See "Round files" below. |
-| Schedule | `content/schedule.json` | Date → round ids, in play order. |
+| Schedule | `content/schedule.json` | Days with an id, date and round ids in play order. The later entry wins when dates match. |
 | Characters | `src/engine/characters.ts` | Each rule and its card text sit together, so a card can't disagree with its rule. |
 | Animation kit | `src/render/` | See `docs/animation-kit.md`. |
 | Raw model proposals | `docs/proposals/` | Kept as a record. The sheets in `content/scenarios/` are the working copies. |
@@ -166,7 +166,7 @@ The rules and the twist are where the fun is, so people make rounds by hand. Cod
 2. Copy a round file in `content/rounds/<type>/`, rename it, set `"status": "draft"`, and change the numbers, the cast or the rules.
 3. Run `npm run rounds -- <id>`. It prints the goal, setup and cards as the player sees them, then every option with its result and quality, marks the best (★) and the obvious (⚠) option, and lists each check with ✓ or ✗.
 4. Change it until it reads well and every check passes. Then play it in the app (`npm run dev`) to see the scene.
-5. Set `"status": "ready"` and add its id to a date in `content/schedule.json`. Run `npm test`.
+5. Set `"status": "ready"` and add its id to a day in `content/schedule.json`. Run `npm test`.
 
 `npm run rounds -- --failing` lists only rounds that fail a check.
 

@@ -1,7 +1,7 @@
 import { gsap } from 'gsap';
 import { cardText, CHARACTERS } from '../engine/characters';
 import { PUZZLES } from '../games/registry';
-import { dailySetFor, localDate } from '../engine/content';
+import { dailySetById, dailySetFor, localDate, SCHEDULE } from '../engine/content';
 import { GRACE_MS, gradeRound, roundScore, speedFactor, square } from '../engine/scoring';
 import type { Round } from '../engine/types';
 import { portrait } from '../render/actor';
@@ -12,7 +12,13 @@ import { reducedMotion } from '../render/svg';
 import { DEMO_PICKS, demoHistogram, demoTopPercent } from './crowd';
 import { store, type RoundRecord } from './store';
 
-const DAY = dailySetFor(localDate());
+const CURRENT_DAY = dailySetFor(localDate());
+const PAST_DAYS = SCHEDULE.slice(0, SCHEDULE.findIndex((day) => day.id === CURRENT_DAY.id)).reverse();
+const wantedDay = new URLSearchParams(window.location.search).get('day');
+const DAY = wantedDay && PAST_DAYS.some((day) => day.id === wantedDay)
+  ? dailySetById(wantedDay)!
+  : CURRENT_DAY;
+const isArchiveDay = DAY.id !== CURRENT_DAY.id;
 const N = DAY.rounds.length;
 /** Most points a day can give: 100 a round. */
 const MAX = N * 100;
@@ -95,7 +101,7 @@ function howToPlay() {
       <li>Best move scores 100. Other moves score by how close their result comes to the best one.</li>
       <li>Each round has 3 minutes. Answer within 45 seconds for full points. After that, points slide down to half by the end. If time runs out, you score 0.</li>
     </ol>
-    <p class="muted">Five rounds a day: two easy, two medium, one hard.</p>`, 'How to play');
+    <p class="muted">This set has ${N} rounds in order of difficulty.</p>`, 'How to play');
 }
 
 function settings() {
@@ -110,7 +116,7 @@ function settings() {
     <div class="setting"><span>Theme</span>${seg('theme', st.theme, [['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']])}</div>
     <div class="setting"><span>Motion</span>${seg('motion', st.motion, [['auto', 'Auto'], ['reduced', 'Reduced'], ['full', 'Full']])}</div>
     <hr/>
-    <button class="btn ghost" data-reset>Reset today’s demo progress</button>`, 'Settings');
+    <button class="btn ghost" data-reset>Reset Day ${esc(DAY.id)} progress</button>`, 'Settings');
   m.wrap.addEventListener('click', (e) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-set]');
     if (b) {
@@ -120,7 +126,7 @@ function settings() {
       applySettings();
     }
     if ((e.target as HTMLElement).closest('[data-reset]')) {
-      store.resetDay(DAY.puzzleNumber);
+      store.resetDay(DAY.id);
       m.close();
       teardown();
       renderHome();
@@ -162,31 +168,38 @@ function dayTotal(recs: RoundRecord[]) { return recs.reduce((a, r) => a + r.scor
 export function renderHome() {
   teardown();
   state.phase = 'home';
-  const recs = store.records(DAY.puzzleNumber);
+  const recs = store.records(DAY.id);
   const done = recs.length >= N;
-  const date = new Date().toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+  const date = new Date(`${DAY.date}T00:00:00`).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+  const pastDays = PAST_DAYS.filter((day) => day.id !== DAY.id);
   root.innerHTML = `
     <main class="home screen">
       <header class="bar">${controls()}</header>
       <div class="home-hero">
         <div class="lineup" aria-hidden="true"></div>
         <h1 class="logo">Outwitly</h1>
-        <p class="tagline">Five quick puzzles. Read the cards. Outthink the crowd.</p>
-        <p class="meta">Puzzle #${DAY.puzzleNumber} · ${esc(date)}</p>
+        <p class="tagline">${N} quick puzzles. Read the cards. Outthink the crowd.</p>
+        <p class="meta">Day ${esc(DAY.id)} · ${esc(date)}</p>
       </div>
       <div class="home-actions">
         ${done ? `
           <div class="done-card">
             <div class="done-total"><b>${dayTotal(recs)}</b>/${MAX}</div>
             <div class="squares" aria-label="Round squares">${recs.map((r) => square(r.quality)).join('')}</div>
-            <p class="muted">Next set in <span class="countdown">--:--:--</span></p>
+            ${isArchiveDay ? '' : '<p class="muted">Next set in <span class="countdown">--:--:--</span></p>'}
           </div>
           <button class="btn primary big" data-action="results">See results</button>
           <button class="btn ghost" data-action="replay">Replay demo</button>`
-        : `<button class="btn primary big" data-action="play">${recs.length ? `Continue · round ${recs.length + 1} of ${N}` : 'Play today’s puzzles'}</button>`}
+        : `<button class="btn primary big" data-action="play">${recs.length ? `Continue · round ${recs.length + 1} of ${N}` : isArchiveDay ? `Play Day ${esc(DAY.id)}` : 'Play today’s puzzles'}</button>`}
         <button class="btn ghost" data-action="how">How to play</button>
+        ${isArchiveDay ? '<a class="btn ghost small" href="?">Back to today</a>' : ''}
+        ${pastDays.length ? `
+          <nav class="muted" aria-labelledby="archive-heading">
+            <small id="archive-heading">Archive</small>
+            ${pastDays.map((day) => `<a class="btn ghost small" href="?day=${encodeURIComponent(day.id)}">Day ${esc(day.id)}</a>`).join('')}
+          </nav>` : ''}
       </div>
-      <p class="foot muted">Demo build: one sample day, no accounts, crowd stats simulated.</p>
+      <p class="foot muted">Demo build with simulated crowd stats.</p>
     </main>`;
   const line = root.querySelector('.lineup')!;
   ['greedy', 'copycat', 'showoff', 'loner', 'fair', 'hero', 'cautious', 'lazy'].forEach((id, i) => {
@@ -198,7 +211,7 @@ export function renderHome() {
     }
   });
   applySettings();
-  if (done) {
+  if (done && !isArchiveDay) {
     const tick = () => {
       const now = new Date();
       const next = new Date(now); next.setHours(24, 0, 0, 0);
@@ -267,7 +280,7 @@ function startRound(idx: number) {
         <div class="cards">${cardsHtml(round)}</div>
         ${OPTION_CAPTION[round.type] ? `<p class="opt-caption">${OPTION_CAPTION[round.type]}</p>` : ''}
         <div class="options n${opts.length}" role="radiogroup" aria-label="Options">
-          ${opts.map((o, i) => `<button class="option" role="radio" aria-checked="false" data-opt="${o.id}" disabled>
+          ${opts.map((o, i) => `<button class="option" role="radio" aria-checked="false" data-opt="${esc(o.id)}" disabled>
             <kbd>${i + 1}</kbd><span class="opt-label">${esc(o.label)}</span>${o.detail ? `<span class="opt-detail">${esc(o.detail)}</span>` : ''}</button>`).join('')}
         </div>
       </section>
@@ -369,7 +382,7 @@ function timeUp(idx: number) {
   state.phase = 'playout';
   root.querySelectorAll<HTMLButtonElement>('.option').forEach((b) => (b.disabled = true));
   const { graded, bestId } = gradeRound(round);
-  store.addRecord(DAY.puzzleNumber, { round: round.index, optionId: null, msRemaining: 0, elapsedMs: round.timeLimitMs, score: 0, quality: 0 });
+  store.addRecord(DAY.id, { round: round.index, optionId: null, msRemaining: 0, elapsedMs: round.timeLimitMs, score: 0, quality: 0 });
   sfx('fail');
   state.stage?.setPreview(null);
   state.stage?.markBest(bestId);
@@ -394,7 +407,7 @@ async function finishRound(idx: number, optionId: string, elapsedMs: number) {
   const mine = graded.find((g) => g.optionId === optionId)!;
   const quality = mine.quality;
   const score = roundScore(quality, elapsedMs, round.timeLimitMs);
-  store.addRecord(DAY.puzzleNumber, { round: round.index, optionId, msRemaining: Math.max(0, round.timeLimitMs - elapsedMs), elapsedMs, score, quality });
+  store.addRecord(DAY.id, { round: round.index, optionId, msRemaining: Math.max(0, round.timeLimitMs - elapsedMs), elapsedMs, score, quality });
 
   const panel = root.querySelector<HTMLElement>('.panel')!;
   root.querySelectorAll<HTMLButtonElement>('.option').forEach((b) => (b.disabled = true));
@@ -484,7 +497,7 @@ function showResult(idx: number, optionId: string | null, score: number, quality
 // ---------- end ----------
 
 function shareText(total: number, top: number, recs: RoundRecord[]) {
-  return `Outwitly #${DAY.puzzleNumber} · ${total}/${MAX} · Top ${top}%\n${recs.map((r) => square(r.quality)).join('')}\njoel1050.github.io/outwitly`;
+  return `Outwitly ${DAY.id} · ${total}/${MAX} · Top ${top}%\n${recs.map((r) => square(r.quality)).join('')}\njoel1050.github.io/outwitly`;
 }
 
 /** Copy to the clipboard. Falls back to a hidden textarea where the Clipboard API is blocked (file:// pages, old browsers). */
@@ -538,7 +551,7 @@ function bellSvg(total: number) {
 function renderEnd() {
   teardown();
   state.phase = 'end';
-  const recs = [...store.records(DAY.puzzleNumber)].sort((a, b) => a.round - b.round);
+  const recs = [...store.records(DAY.id)].sort((a, b) => a.round - b.round);
   const total = dayTotal(recs);
   const top = demoTopPercent((total * 500) / MAX);
   const rows = recs.map((r) => {
@@ -557,7 +570,7 @@ function renderEnd() {
   }).join('');
   root.innerHTML = `
     <main class="end screen">
-      <header class="bar"><span class="round-meta">Outwitly #${DAY.puzzleNumber}</span>${controls()}</header>
+      <header class="bar"><span class="round-meta">Outwitly · Day ${esc(DAY.id)}</span>${controls()}</header>
       <section class="end-hero">
         <div class="total"><span class="big">0</span><span class="of">/${MAX}</span></div>
         <div class="pct">Top ${top}%</div>
@@ -610,11 +623,11 @@ export function boot() {
       case 'settings': settings(); break;
       case 'how': howToPlay(); break;
       case 'play': {
-        const recs = store.records(DAY.puzzleNumber);
+        const recs = store.records(DAY.id);
         startRound(recs.length);
         break;
       }
-      case 'replay': store.resetDay(DAY.puzzleNumber); startRound(0); break;
+      case 'replay': store.resetDay(DAY.id); startRound(0); break;
       case 'results': renderEnd(); break;
       case 'home': renderHome(); break;
       case 'share': state.share?.(); break;

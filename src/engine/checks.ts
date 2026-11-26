@@ -32,6 +32,7 @@ export interface RoundReport {
   cards: { name: string; text: string }[];
   graded: Graded[];
   bestId?: string;
+  explanation?: string;
   obviousId?: string;
   checks: Check[];
   /** Load errors: the round can't be graded at all. */
@@ -66,6 +67,7 @@ export function checkRound(file: RoundFile): RoundReport {
     const { graded, bestId } = gradeRound(round);
     rep.graded = graded;
     rep.bestId = bestId;
+    rep.explanation = type.explain(round, bestId);
     rep.obviousId = type.obviousOptionId(round);
   } catch (e) {
     rep.errors.push(`could not solve: ${(e as Error).message}`);
@@ -114,6 +116,8 @@ export function formatReport(r: RoundReport): string {
     out.push(`  ${g.label.padEnd(w)}  ${g.outcome.valueLabel.padEnd(18)} q=${g.quality.toFixed(2)}  ${marks}`);
     out.push(`  ${''.padEnd(w)}  ${g.outcome.summary}`);
   }
+  out.push('');
+  out.push(`  Best:  ${r.explanation}`);
   out.push('');
   for (const c of r.checks) out.push(`  ${c.ok ? '✓' : '✗'} ${c.name}: ${c.detail}`);
   return out.join('\n');

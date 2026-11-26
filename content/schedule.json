@@ -1,3 +1,24 @@
 {
-  "2026-11-25": ["chests-pile-on", "junction-hero-finishes-it", "pirates-cheapest-votes", "agenda-voting-cycle", "duel-miss-on-purpose"]
+  "days": [
+    {
+      "id": "0.1",
+      "date": "2026-11-25",
+      "rounds": [
+        "chests-pile-on",
+        "junction-hero-finishes-it",
+        "pirates-cheapest-votes",
+        "agenda-voting-cycle",
+        "duel-miss-on-purpose"
+      ]
+    },
+    {
+      "id": "0.2",
+      "date": "2026-11-25",
+      "rounds": [
+        "cookie-cut-chocolate-pair",
+        "roll-call-town-hall-swing",
+        "mystery-box-knothole-auction"
+      ]
+    }
+  ]
 }

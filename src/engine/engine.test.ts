@@ -4,7 +4,7 @@ import { bestPossible } from './puzzles/pirates';
 import { optionChance } from './puzzles/duel';
 import { PUZZLES } from './registry';
 import { SAMPLE_DAY } from './sample-day';
-import { gradeRound, roundScore } from './scoring';
+import { gradeRound, roundScore, speedFactor } from './scoring';
 
 // Spec appendix fixtures.
 const EXPECTED: Record<number, Record<string, { value: number; quality: number; winner?: string }>> = {
@@ -69,10 +69,17 @@ describe('sample day fixtures', () => {
     expect(best.value).toBe(66);
   });
 
-  it('round score check from the spec', () => {
-    expect(roundScore(1, 18400, 30000)).toBe(98);
-    expect(roundScore(0, 18400, 30000)).toBe(0);
-    expect(roundScore(1, 0, 30000)).toBe(0);
+  it('round score: full points inside 45 s, then down to half at 3 min, 0 on timeout', () => {
+    const L = 180_000;
+    expect(roundScore(1, 0, L)).toBe(100);
+    expect(roundScore(1, 45_000, L)).toBe(100);
+    expect(roundScore(1, 112_500, L)).toBe(75); // halfway through the slide
+    expect(roundScore(1, 179_999, L)).toBe(50);
+    expect(roundScore(1, 180_000, L)).toBe(0);
+    expect(roundScore(0.5, 10_000, L)).toBe(50);
+    expect(roundScore(0, 10_000, L)).toBe(0);
+    // Faster is never worse.
+    for (let t = 0; t < L; t += 1000) expect(speedFactor(t, L)).toBeGreaterThanOrEqual(speedFactor(t + 1000, L));
   });
 
   it('card rules are at most 12 words', () => {

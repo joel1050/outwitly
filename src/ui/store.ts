@@ -2,6 +2,8 @@ export interface RoundRecord {
   round: number;
   optionId: string | null;
   msRemaining: number;
+  /** Time taken to answer. Missing on records saved before the timer came back. */
+  elapsedMs?: number;
   score: number;
   quality: number;
 }

@@ -30,15 +30,24 @@ export function gradeRound(round: Round): { graded: Graded[]; bestId: string } {
   return { graded, bestId };
 }
 
-export function roundScore(quality: number, msRemaining: number, timeLimitMs: number): number {
-  if (msRemaining <= 0) return 0;
-  const speed = Math.max(0, Math.min(1, msRemaining / timeLimitMs));
-  return Math.round(95 * quality + 5 * speed * (quality > 0 ? 1 : 0));
+/** Answer within this long and speed costs nothing. */
+export const GRACE_MS = 45_000;
+/** Share of the points still earned by an answer given just before the deadline. */
+export const SLOWEST_SPEED = 0.5;
+
+/**
+ * Share of the points kept for answering after `elapsedMs`: 1 inside the grace period, then a
+ * straight line down to SLOWEST_SPEED at the deadline. 0 once time is up.
+ */
+export function speedFactor(elapsedMs: number, limitMs: number): number {
+  if (elapsedMs >= limitMs) return 0;
+  if (elapsedMs <= GRACE_MS) return 1;
+  return 1 - (1 - SLOWEST_SPEED) * ((elapsedMs - GRACE_MS) / (limitMs - GRACE_MS));
 }
 
-/** Score with no clock: the speed bonus is dropped and quality alone fills 0–100. */
-export function untimedScore(quality: number): number {
-  return Math.round(100 * quality);
+/** Round score, 0–100: how good the move was times how fast it came. */
+export function roundScore(quality: number, elapsedMs: number, limitMs: number): number {
+  return Math.round(100 * quality * speedFactor(elapsedMs, limitMs));
 }
 
 export type Square = '🟩' | '🟨' | '🟧' | '🟥';

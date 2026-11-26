@@ -2,7 +2,7 @@ import { gsap } from 'gsap';
 import { cardText, CHARACTERS } from '../engine/characters';
 import { PUZZLES } from '../engine/registry';
 import { SAMPLE_DAY } from '../engine/sample-day';
-import { gradeRound, untimedScore, square } from '../engine/scoring';
+import { GRACE_MS, gradeRound, roundScore, speedFactor, square } from '../engine/scoring';
 import type { Round } from '../engine/types';
 import { portrait } from '../render/actor';
 import { initAudio, isMuted, setMuted, setSuppressed, sfx } from '../render/audio';
@@ -23,6 +23,9 @@ const state = {
   stage: null as Stage | null,
   selected: null as string | null,
   homeTick: 0,
+  /** When the current round's clock started (performance.now), and its animation frame. */
+  clockStart: 0,
+  clockRaf: 0,
   onNext: null as null | (() => void),
   select: null as null | ((n: number) => void),
   skip: null as null | (() => void),
@@ -85,7 +88,8 @@ function howToPlay() {
       <li>Each round is one decision in a small scene shared with cartoon characters.</li>
       <li>Every character follows the rule on its card, every time. Tap a card to read it.</li>
       <li>Tap an option to play it. One try per round, so read the cards first. Keys: <kbd>1</kbd>–<kbd>4</kbd>.</li>
-      <li>Best move scores 100. Other moves earn partial credit. There’s no clock, so take your time.</li>
+      <li>Best move scores 100. Other moves earn partial credit.</li>
+      <li>Each round has 3 minutes. Answer within 45 seconds for full points. After that, points slide down to half by the end. If time runs out, you score 0.</li>
     </ol>
     <p class="muted">Five rounds a day: two easy, two medium, one hard.</p>`, 'How to play');
 }
@@ -137,6 +141,7 @@ function cardModal(id: string, rule: string, badge: string) {
 
 function teardown() {
   clearInterval(state.homeTick);
+  cancelAnimationFrame(state.clockRaf);
   state.stage?.destroy();
   state.stage = null;
   state.onNext = state.select = state.skip = null;
@@ -242,6 +247,10 @@ function startRound(idx: number) {
         </div>
         ${controls()}
       </header>
+      <div class="timer-row grace" role="timer" aria-label="Time left">
+        <div class="fuse"><div class="fuse-burn"></div><i class="grace-mark" style="left:${100 * (1 - GRACE_MS / round.timeLimitMs)}%"></i></div>
+        <span class="timer-label"><b>${clock(round.timeLimitMs)}</b> · full points</span>
+      </div>
       <p class="setup"><span class="goal"><b>Goal:</b> ${esc(type.goal(round))}</span>${esc(type.setup(round))}</p>
       <div class="scene-slot">
         <div class="scene-wrap">
@@ -269,6 +278,7 @@ function startRound(idx: number) {
   stage.intro().then(() => {
     if (state.stage !== stage) return;
     state.phase = 'decide';
+    startClock(idx, round.timeLimitMs);
     root.querySelectorAll<HTMLButtonElement>('.option').forEach((b) => (b.disabled = false));
     (root.querySelector('.option') as HTMLElement)?.focus({ preventScroll: true });
   });
@@ -279,7 +289,7 @@ function startRound(idx: number) {
     state.selected = id;
     root.querySelectorAll<HTMLElement>('.option').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.opt === id)));
     sfx('lock');
-    finishRound(idx, id);
+    finishRound(idx, id, performance.now() - state.clockStart);
   };
   const optionsEl = root.querySelector<HTMLElement>('.options')!;
   optionsEl.addEventListener('click', (e) => {
@@ -307,6 +317,56 @@ function startRound(idx: number) {
   };
 }
 
+/** 125000 → "2:05". Rounds up, so the clock never shows 0:00 while time is left. */
+function clock(ms: number) {
+  const s = Math.ceil(Math.max(0, ms) / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+/** Runs the round's clock: burns the fuse, updates the label, and ends the round at zero. */
+function startClock(idx: number, limitMs: number) {
+  const row = root.querySelector<HTMLElement>('.timer-row')!;
+  const burn = row.querySelector<HTMLElement>('.fuse-burn')!;
+  const label = row.querySelector<HTMLElement>('.timer-label')!;
+  const t0 = performance.now();
+  state.clockStart = t0;
+  let shown = -1;
+  const frame = () => {
+    if (state.phase !== 'decide') return;
+    const elapsed = performance.now() - t0;
+    const left = limitMs - elapsed;
+    burn.style.width = `${Math.max(0, left / limitMs) * 100}%`;
+    const sec = Math.ceil(Math.max(0, left) / 1000);
+    if (sec !== shown) {
+      shown = sec;
+      const inGrace = elapsed < GRACE_MS;
+      label.innerHTML = inGrace
+        ? `<b>${clock(left)}</b> · full points for ${clock(GRACE_MS - elapsed)}`
+        : `<b>${clock(left)}</b> · ${Math.round(speedFactor(elapsed, limitMs) * 100)}% points`;
+      row.classList.toggle('grace', inGrace);
+      row.classList.toggle('hot', left <= 30_000);
+      if (left > 0 && left <= 10_000) sfx('tick');
+    }
+    if (left <= 0) { timeUp(idx); return; }
+    state.clockRaf = requestAnimationFrame(frame);
+  };
+  frame();
+}
+
+/** The clock ran out with no move: nothing plays, the round scores 0. */
+function timeUp(idx: number) {
+  if (state.phase !== 'decide') return;
+  const round = DAY.rounds[idx];
+  state.phase = 'playout';
+  root.querySelectorAll<HTMLButtonElement>('.option').forEach((b) => (b.disabled = true));
+  const { graded, bestId } = gradeRound(round);
+  store.addRecord(DAY.puzzleNumber, { round: round.index, optionId: null, msRemaining: 0, elapsedMs: round.timeLimitMs, score: 0, quality: 0 });
+  sfx('fail');
+  state.stage?.setPreview(null);
+  state.stage?.markBest(bestId);
+  showResult(idx, null, 0, 0, graded, bestId, round.timeLimitMs);
+}
+
 /** On very short screens the page can still scroll; bring the whole scene into view for the playout. */
 function showWholeScene() {
   const scene = root.querySelector<HTMLElement>('.scene-wrap');
@@ -316,7 +376,7 @@ function showWholeScene() {
   scene.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
 }
 
-async function finishRound(idx: number, optionId: string) {
+async function finishRound(idx: number, optionId: string, elapsedMs: number) {
   if (state.phase !== 'decide') return;
   const round = DAY.rounds[idx];
   const stage = state.stage!;
@@ -324,8 +384,8 @@ async function finishRound(idx: number, optionId: string) {
   const { graded, bestId } = gradeRound(round);
   const mine = graded.find((g) => g.optionId === optionId)!;
   const quality = mine.quality;
-  const score = untimedScore(quality);
-  store.addRecord(DAY.puzzleNumber, { round: round.index, optionId, msRemaining: 0, score, quality });
+  const score = roundScore(quality, elapsedMs, round.timeLimitMs);
+  store.addRecord(DAY.puzzleNumber, { round: round.index, optionId, msRemaining: Math.max(0, round.timeLimitMs - elapsedMs), elapsedMs, score, quality });
 
   const panel = root.querySelector<HTMLElement>('.panel')!;
   root.querySelectorAll<HTMLButtonElement>('.option').forEach((b) => (b.disabled = true));
@@ -355,10 +415,10 @@ async function finishRound(idx: number, optionId: string) {
   }
   if (state.stage !== stage) return;
   stage.markBest(bestId);
-  showResult(idx, optionId, score, quality, graded, bestId);
+  showResult(idx, optionId, score, quality, graded, bestId, elapsedMs);
 }
 
-function showResult(idx: number, optionId: string | null, score: number, quality: number, graded: ReturnType<typeof gradeRound>['graded'], bestId: string) {
+function showResult(idx: number, optionId: string | null, score: number, quality: number, graded: ReturnType<typeof gradeRound>['graded'], bestId: string, elapsedMs: number) {
   state.phase = 'result';
   const round = DAY.rounds[idx];
   const type = PUZZLES[round.type];
@@ -368,6 +428,8 @@ function showResult(idx: number, optionId: string | null, score: number, quality
   const panel = root.querySelector<HTMLElement>('.panel')!;
   const sq = square(quality);
   const isLast = idx === N - 1;
+  const speed = speedFactor(elapsedMs, round.timeLimitMs);
+  const timeText = !mine ? 'Out of time' : `Took ${clock(elapsedMs)} · ${speed === 1 ? 'full points' : `${Math.round(speed * 100)}% points`}`;
   panel.classList.remove('dim');
   root.querySelector('.round')?.classList.add('done');
   panel.innerHTML = `
@@ -377,6 +439,7 @@ function showResult(idx: number, optionId: string | null, score: number, quality
         <div class="res-q">
           <div class="qbar"><i style="width:0%"></i></div>
           <span class="qtext">${sq} ${Math.round(quality * 100)}% of the best</span>
+          <span class="qtext time">⏱ ${timeText}</span>
         </div>
       </div>
       <p class="res-line">${mine ? `${esc(mine.outcome.summary)}` : 'Time’s up. No move, no points.'}</p>
@@ -394,7 +457,7 @@ function showResult(idx: number, optionId: string | null, score: number, quality
       <button class="btn primary next">${isLast ? 'See your day' : 'Next round'} →</button>
     </div>`;
   const live = root.querySelector('#live');
-  if (live) live.textContent = `${mine ? mine.outcome.summary : 'Time’s up.'} You scored ${score}. Best move: ${best.label}.`;
+  if (live) live.textContent = `${mine ? mine.outcome.summary : 'Time’s up.'} ${timeText}. You scored ${score}. Best move: ${best.label}.`;
   gsap.from(panel.querySelector('.result'), { y: 30, opacity: 0, duration: 0.35, ease: 'power2.out' });
   const o = { v: 0 };
   const num = panel.querySelector('.num')!;
@@ -479,7 +542,7 @@ function renderEnd() {
     return `<li>
       <span class="sq">${square(r.quality)}</span>
       <span class="r-name">${type.title}</span>
-      <span class="r-move">${mine ? esc(mine.label) : 'timed out'}${missed ? ` <span class="muted">· best: ${esc(best.label)}</span>` : ''}</span>
+      <span class="r-move">${mine ? esc(mine.label) : 'timed out'}${missed ? ` <span class="muted">· best: ${esc(best.label)}</span>` : ''}${mine && r.elapsedMs != null ? ` <span class="muted">· ${clock(r.elapsedMs)}</span>` : ''}</span>
       <span class="r-score">${r.score}</span>
     </li>`;
   }).join('');

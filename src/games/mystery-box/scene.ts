@@ -41,6 +41,7 @@ const STYLES = `
   .mystery-box-gain-neg { fill: #f6b0a0; }
   .mystery-box-gain-zero { fill: #e8e2d8; }
   .mystery-box-gain-text { font-size: 10.5px; fill: #2b2a33; }
+  .mystery-box-pile-text { font-size: 9.5px; font-weight: 700; fill: #2b2a33; }
   .mystery-box-paddle { fill: #ece6ff; }
   .mystery-box-paddle-text { font-size: 11px; fill: #2b2a33; }
   .is-best .mystery-box-paddle { fill: var(--gold); }
@@ -60,6 +61,7 @@ const STYLES = `
     :root:not([data-theme='light']) .mystery-box-card-hole { fill: #3d3847; }
     :root:not([data-theme='light']) .mystery-box-bid-row { fill: #443f50; }
     :root:not([data-theme='light']) .mystery-box-bid-text { fill: #f3ede2; }
+    :root:not([data-theme='light']) .mystery-box-pile-text { fill: #f3ede2; }
     :root:not([data-theme='light']) .mystery-box-bid-win .mystery-box-bid-text { fill: #2b2a33; }
     :root:not([data-theme='light']) .mystery-box-gain-zero { fill: #4c4759; }
     :root:not([data-theme='light']) .mystery-box-gain-zero-txt { fill: #f3ede2; }
@@ -77,6 +79,7 @@ const STYLES = `
   :root[data-theme='dark'] .mystery-box-card-hole { fill: #3d3847; }
   :root[data-theme='dark'] .mystery-box-bid-row { fill: #443f50; }
   :root[data-theme='dark'] .mystery-box-bid-text { fill: #f3ede2; }
+  :root[data-theme='dark'] .mystery-box-pile-text { fill: #f3ede2; }
   :root[data-theme='dark'] .mystery-box-bid-win .mystery-box-bid-text { fill: #2b2a33; }
   :root[data-theme='dark'] .mystery-box-gain-zero { fill: #4c4759; }
   :root[data-theme='dark'] .mystery-box-gain-zero-txt { fill: #f3ede2; }
@@ -90,14 +93,17 @@ interface BoxCard {
   contents: number;
 }
 
-/** A pile of gold coins, one per COIN_UNIT, in up to three stacks. It grows and shrinks. */
+/** A pile of gold coins, one per COIN_UNIT, in up to three stacks, with its amount below. It grows and shrinks. */
 class CoinPile {
   readonly g: SVGGElement;
   private coins: SVGEllipseElement[] = [];
+  private label: SVGTextElement;
 
-  constructor(parent: Element, private x: number, private y: number, count: number) {
+  constructor(parent: Element, private x: number, private y: number, amount: number) {
     this.g = s('g', {}, parent);
-    this.set(count, false);
+    s('rect', { x: x - 17, y: y + 6, width: 34, height: 13, rx: 6.5, class: 'mystery-box-slate', ...ol(1.6) }, this.g);
+    this.label = text(this.g, x, y + 13, '', { class: 'mystery-box-pile-text' });
+    this.set(amount, undefined, false);
   }
 
   get count() { return this.coins.length; }
@@ -106,7 +112,10 @@ class CoinPile {
     return [this.x, this.y - 6 - Math.ceil(Math.max(this.coins.length, 3) / 3) * 4.4];
   }
 
-  set(n: number, animate = true) {
+  /** Show `amount` coins; `shown` overrides the number (for an exact average). */
+  set(amount: number, shown = String(amount), animate = true) {
+    this.label.textContent = shown;
+    const n = Math.max(0, Math.round(amount / COIN_UNIT));
     const rm = reducedMotion();
     while (this.coins.length < n) {
       const i = this.coins.length;
@@ -227,9 +236,9 @@ export class MysteryBoxStage extends Stage {
       this.addActor(id, ax, ACTOR_Y, aScale);
     });
 
-    // The player's coins, as a pile beside them. No number: the size is the number.
+    // The player's coins, as a pile beside them with the amount below.
     const you = this.actors.you;
-    this.pile = new CoinPile(this.props, you.x - 45, ACTOR_Y - 4, this.coinsFor(this.wallet));
+    this.pile = new CoinPile(this.props, you.x - 45, ACTOR_Y - 4, this.wallet);
 
     this.svg.setAttribute('aria-label', logic.setup(this.round));
   }
@@ -289,7 +298,7 @@ export class MysteryBoxStage extends Stage {
 
         // Light up this case's card; the pile goes back to the start amount.
         for (const a of Object.values(this.actors)) a.lookAt(CRATE_X, CRATE_Y);
-        this.pile.set(this.coinsFor(this.wallet));
+        this.pile.set(this.wallet);
         gsap.to(card.activeRing, { opacity: 1, duration: 0.2 });
         if (!rm) gsap.to(card.g, { y: CARD_Y - 3, duration: 0.2, ease: 'power2.out' });
         sfx('pop');
@@ -334,11 +343,11 @@ export class MysteryBoxStage extends Stage {
         const crateTop: [number, number] = [CRATE_X, CRATE_Y - 8];
         const pips = (amount: number) => Math.max(1, Math.min(6, this.coinsFor(amount)));
         if (ev.winner === 'you') {
-          const after = this.coinsFor(this.wallet + ev.gain);
+          const after = this.wallet + ev.gain;
           const paid = Math.max(0, this.coinsFor(this.wallet) - this.coinsFor(this.wallet - ev.price));
           // Pay: coins leave the pile for the crate.
           const from = this.pile.top;
-          this.pile.set(this.coinsFor(this.wallet - ev.price));
+          this.pile.set(this.wallet - ev.price);
           sfx('thud');
           if (!rm && paid) void coinArc(this.fx, from, crateTop, pips(ev.price), () => {});
           await wait(rm ? 0.2 : 0.38);
@@ -387,7 +396,7 @@ export class MysteryBoxStage extends Stage {
           gsap.fromTo(card.activeRing, { opacity: 0.9 }, { opacity: 0.25, duration: 0.45 });
         }
         // The pile settles at the average: bigger if you gain, smaller if you lose.
-        this.pile.set(this.coinsFor(ev.value));
+        this.pile.set(ev.value, ev.exact);
 
         const delta = ev.value - this.wallet;
         const kind = delta > 0 ? 'good' : delta < 0 ? 'bad' : 'info';

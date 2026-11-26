@@ -1,3 +1,4 @@
+import { listJoin } from '../text';
 import { rule, CHARACTERS } from '../characters';
 import type { Outcome, PuzzleType, Round, TimelineEvent } from '../types';
 
@@ -23,10 +24,10 @@ export const chests: PuzzleType<ChestsParams> = {
   family: 'crowding',
   title: 'Chests',
   betterIs: 'higher',
-  goal: () => 'End up with the most coins.',
+  goal: () => 'Get as many coins as you can.',
   setup: (r) => {
     const names = r.params.order.filter((a) => a !== 'you').map((a) => CHARACTERS[a].name);
-    return `Four chests hold ${r.params.chests.join(', ')} coins. Everyone on a chest shares it equally. You pick first, then ${names.slice(0, -1).join(', ')} and ${names.at(-1)}.`;
+    return `Four chests hold ${listJoin(r.params.chests.map(String))} coins. Everyone on a chest splits it equally. You pick first; then ${listJoin(names)} pick in turn, each seeing every earlier pick.`;
   },
   options: (r) => r.params.chests.map((v) => ({ id: cid(v), label: `${v}`, detail: 'coin chest' })),
   resolve(r, optionId) {
@@ -46,7 +47,7 @@ export const chests: PuzzleType<ChestsParams> = {
     }
     const crowd = order.filter((a) => a !== 'you' && picks[a] === idx).map((a) => CHARACTERS[a].name);
     const summary = crowd.length
-      ? `You took the ${values[idx]} chest and shared it with ${crowd.join(', ')}: ${fmt(mine)} coins each.`
+      ? `You took the ${values[idx]} chest and shared it with ${listJoin(crowd)}: ${fmt(mine)} coins each.`
       : `You had the ${values[idx]} chest to yourself: ${fmt(mine)} coins.`;
     return { value: mine, valueLabel: `${fmt(mine)} coins`, events, summary } satisfies Outcome;
   },

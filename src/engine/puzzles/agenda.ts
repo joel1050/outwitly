@@ -1,4 +1,5 @@
-import { rule } from '../characters';
+import { listJoin } from '../text';
+import { rule, CHARACTERS } from '../characters';
 import type { PuzzleType, Round, TimelineEvent } from '../types';
 
 export interface AgendaParams { proposals: string[]; yourValues: Record<string, number> }
@@ -35,8 +36,10 @@ export const agenda: PuzzleType<AgendaParams> = {
       .sort((a, b) => b[1] - a[1]).map(([k]) => title(k));
     return `Get the ${first} built. Second best: the ${second}.`;
   },
-  setup: () =>
-    'Two proposals face a vote first; the winner then faces the third. You choose which two go first. Each card lists a voter’s preferences, favourite first.',
+  setup: (r) => {
+    const voters = r.characters.map((c) => CHARACTERS[c.id].name);
+    return `One of three proposals gets built: ${listJoin(r.params.proposals.map(title), 'or')}. ${listJoin(voters)} vote; you don’t. Pick the first pair. Its winner faces the third; majority wins each vote. Each voter backs whichever option it ranks higher.`;
+  },
   options: (r) => pairs(r).map(([a, b]) => ({
     id: `${a}_${b}_first`, label: `${title(a)} vs ${title(b)}`,
   })),

@@ -1,3 +1,4 @@
+import { listJoin } from '../text';
 import { rule, CHARACTERS } from '../characters';
 import type { PuzzleType, Round, TimelineEvent } from '../types';
 
@@ -36,16 +37,15 @@ export function bestPossible(round: Round<PiratesParams>): { value: number; spli
   return best;
 }
 
-const listJoin = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`);
 
 export const pirates: PuzzleType<PiratesParams> = {
   id: 'pirates',
   family: 'splitting',
   title: 'Pirates',
   betterIs: 'higher',
-  goal: () => 'Keep the most gold without walking the plank.',
+  goal: () => 'Keep as much gold as you can.',
   setup: (r) =>
-    `You’re captain, splitting ${r.params.gold} gold with ${listJoin(r.params.crew.map((c) => CHARACTERS[c].name))}. Shares go in order: you, ${r.params.crew.map((c) => CHARACTERS[c].name).join(', ')}. Get ${r.params.votesNeeded} of ${r.params.crew.length + 1} votes (yours counts) or walk the plank.`,
+    `You’re captain, splitting ${r.params.gold} gold with ${listJoin(r.params.crew.map((c) => CHARACTERS[c].name))}. Shares go in order: you, ${r.params.crew.map((c) => CHARACTERS[c].name).join(', ')}. You need ${r.params.votesNeeded} of ${r.params.crew.length + 1} yes votes, and you always vote yes. Fail and you walk the plank with nothing.`,
   options: (r) =>
     Object.entries(r.options as Splits).map(([id, s]) => ({ id, label: id, detail: s.join(' / ') })),
   resolve(r, optionId) {

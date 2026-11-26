@@ -45,7 +45,7 @@ const sharedRules = {
 
 const sharedText = {
   ranking: (args: string[]) => `Prefers ${args.slice(0, -1).map(title).join(', then ')}, then ${title(args.at(-1)!)}.`,
-  aimAtMostAccurateRemaining: () => 'Aims at the most accurate opponent still dry.',
+  aimAtMostAccurateRemaining: () => 'Aims at the most accurate other player still dry.',
 };
 
 export const CHARACTERS: Record<string, CharacterDef> = {
@@ -64,8 +64,8 @@ export const CHARACTERS: Record<string, CharacterDef> = {
     },
     cardText: {
       ...sharedText,
-      biggest: () => 'Takes the biggest chest.',
-      yesIfAtLeast: (a: { min: number }) => `Votes yes only if it gets ${a.min} or more.`,
+      biggest: () => 'Takes the biggest chest, even if others are on it.',
+      yesIfAtLeast: (a: { min: number }) => `Votes yes only if it gets ${a.min} gold or more.`,
     },
   },
   copycat: {
@@ -94,7 +94,7 @@ export const CHARACTERS: Record<string, CharacterDef> = {
     },
     cardText: {
       ...sharedText,
-      mostOccupied: () => 'Joins the chest with the most characters.',
+      mostOccupied: () => 'Joins the chest with the most characters on it, you included.',
     },
   },
   loner: {
@@ -118,7 +118,7 @@ export const CHARACTERS: Record<string, CharacterDef> = {
     },
     cardText: {
       ...sharedText,
-      yesIfNoneAboveDouble: () => 'Votes yes only if nobody gets more than double its share.',
+      yesIfNoneAboveDouble: () => 'Votes yes only if nobody gets over twice what Fair gets.',
     },
   },
   lazy: {
@@ -135,7 +135,7 @@ export const CHARACTERS: Record<string, CharacterDef> = {
     },
     cardText: {
       pullIfHeadingAbove: (a: { threshold: number }) =>
-        `Pulls if the trolley is heading for more than ${a.threshold} people.`,
+        `After you move, pulls if it’s heading for more than ${a.threshold} people.`,
     },
   },
   cautious: {

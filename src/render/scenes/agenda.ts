@@ -8,6 +8,7 @@ import { s, text, OUTLINE } from '../svg';
 
 const ol = (w = 3) => ({ stroke: OUTLINE, 'stroke-width': w, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' });
 const title = (x: string) => x.charAt(0).toUpperCase() + x.slice(1);
+const ORDINAL = ['1st', '2nd', '3rd'];
 const SIGN_Y = 96;
 const BOX: [number, number] = [200, 218];
 const SIGN_X: Record<string, number> = { fountain: 72, skatepark: 200, garden: 328 };
@@ -42,6 +43,8 @@ export class AgendaStage extends Stage {
   protected build() {
     const proposals = this.round.params.proposals as string[];
     const vals = this.round.params.yourValues as Record<string, number>;
+    // Your order of preference, best first, shown on each sign as "your 1st choice" and so on.
+    const rank = Object.keys(vals).sort((x, y) => vals[y] - vals[x]);
     s('rect', { x: 0, y: 0, width: W, height: 300, class: 'c-stone' }, this.bg);
     s('rect', { x: 0, y: 0, width: W, height: 44, class: 'c-sky' }, this.bg);
     const houses: [number, number, number][] = [[0, 44, 22], [48, 40, 30], [96, 52, 20], [150, 46, 28], [210, 50, 18], [262, 44, 30], [318, 42, 24], [362, 48, 30]];
@@ -63,7 +66,7 @@ export class AgendaStage extends Stage {
       text(g, 12, -10, title(p), { class: 'sign-text' });
       gsap.set(g, { transformOrigin: '50% 100%' });
       this.signs[p] = g;
-      this.label(this.props, x, SIGN_Y + 58, `you: ${vals[p]}`, 'value-pill');
+      this.label(this.props, x, SIGN_Y + 58, `your ${ORDINAL[rank.indexOf(p)]} choice`, 'value-pill');
     }
 
     this.box = s('g', {}, this.props);

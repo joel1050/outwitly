@@ -22,7 +22,7 @@ export const junction: PuzzleType<JunctionParams> = {
   options: () => [
     { id: 'pull', label: 'Pull', detail: 'your lever' },
     { id: 'leave', label: 'Leave', detail: 'do nothing' },
-    { id: 'jam', label: 'Jam', detail: 'Hero’s lever' },
+    { id: 'jam', label: 'Jam', detail: 'Hero can’t pull' },
   ],
   resolve(r, optionId) {
     const { exits, routing } = r.params;

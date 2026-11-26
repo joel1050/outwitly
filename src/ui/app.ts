@@ -88,7 +88,7 @@ function howToPlay() {
       <li>Each round is one decision in a small scene shared with cartoon characters.</li>
       <li>Every character follows the rule on its card, every time. Tap a card to read it.</li>
       <li>Tap an option to play it. One try per round, so read the cards first. Keys: <kbd>1</kbd>–<kbd>4</kbd>.</li>
-      <li>Best move scores 100. Other moves earn partial credit.</li>
+      <li>Best move scores 100. Other moves score by how close their result comes to the best one.</li>
       <li>Each round has 3 minutes. Answer within 45 seconds for full points. After that, points slide down to half by the end. If time runs out, you score 0.</li>
     </ol>
     <p class="muted">Five rounds a day: two easy, two medium, one hard.</p>`, 'How to play');

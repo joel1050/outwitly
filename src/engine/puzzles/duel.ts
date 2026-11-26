@@ -103,9 +103,13 @@ export const duel: PuzzleType<DuelParams> = {
   title: 'Duel',
   betterIs: 'higher',
   floor: (r) => r.params.floor,
-  goal: () => 'Be the last one dry.',
-  setup: () =>
-    'A water-balloon duel; the last one dry wins. Throw order: you, Cautious, Show-off, repeat. Where does your first balloon go? After that, you aim at whoever is left.',
+  goal: () => 'Best chance of being the last one dry.',
+  setup: (r) => {
+    const yours = r.params.accuracy.you;
+    const aim = yours === '1/1' ? 'never miss' : `hit ${yours.replace('/', ' in ')}`;
+    const turns = r.params.order.map((id) => (id === 'you' ? 'you' : CHARACTERS[id].name)).join(', ');
+    return `Water-balloon duel: one hit and you’re out; the last one dry wins. You ${aim}. Turns go ${turns}, repeat. Choose your first throw; after that, you aim at the most accurate rival still dry.`;
+  },
   options: () => [
     { id: 'showoff', label: 'Show-off', detail: 'never misses' },
     { id: 'cautious', label: 'Cautious', detail: 'hits 2 in 3' },
@@ -115,13 +119,13 @@ export const duel: PuzzleType<DuelParams> = {
     const q = optionChance(r, optionId);
     const { events, winner } = playOnce(r, optionId, hashString(`duel:${optionId}`));
     const firstText = optionId === AIR ? 'You threw into the air.' : `You threw first at ${CHARACTERS[optionId].name}.`;
-    const runText = winner === 'you' ? 'In this run you were the last one dry.' : `In this run ${CHARACTERS[winner].name} was the last one dry.`;
+    const runText = winner === 'you' ? 'In this run, you were the last one dry.' : `In this run, ${CHARACTERS[winner].name} was the last one dry.`;
     return {
       value: q.toNumber(),
       exact: q.toString(),
       valueLabel: `${pct(q)} to win`,
       events,
-      summary: `${firstText} ${runText} Over every run, you stay dry ${q.toString()} of the time (${pct(q)}).`,
+      summary: `${firstText} ${runText} Your score uses your odds over every run: ${pct(q)}.`,
     };
   },
   obviousOptionId: () => 'showoff',

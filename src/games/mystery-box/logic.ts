@@ -43,13 +43,11 @@ const mysteryBox: PuzzleType<MysteryBoxParams> = {
   family: 'bidding',
   title: 'Mystery Box',
   betterIs: 'higher',
-  goal: () => 'End with the most coins, on average.',
-  setup: ({ params: { wallet, boxes } }) => {
-    const odds = boxes.map(({ contents, chance }, i) => {
-      const { n, d } = Q.parse(chance);
-      return `${contents}${i === 0 ? ' coins' : ''} (${n} in ${d})`;
-    });
-    return `You have ${wallet} coins. The box holds ${listJoin(odds, 'or')}. Everyone bids once, in secret. The top bid pays its bid and gets the box. Rivals win ties.`;
+  goal: ({ params: { wallet } }) => `Start with ${wallet} coins. End with the most, on average.`,
+  setup: ({ params: { boxes } }) => {
+    const contents = boxes.map(({ contents }) => String(contents));
+    const chances = boxes.map(({ chance }) => { const { n, d } = Q.parse(chance); return `${n} in ${d}`; });
+    return `A single box holds ${listJoin(contents, 'or')} coins, with chances ${listJoin(chances)}. Rivals peek inside; you can't. Everyone bids once, in secret. The highest bid buys the box; rivals win ties.`;
   },
   options: (r) => (r.options.bids as number[]).map((bid) => ({ id: bidId(bid), label: bid === 0 ? 'Pass' : `Bid ${bid}` })),
   resolve(r, optionId) {

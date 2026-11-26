@@ -7,8 +7,8 @@
 
 A sealed box holds one of several coin prizes. Two rivals peek before the secret bids go in.
 
-- **Goal** — End with the most coins, on average.
-- **Setup** — You have 120 coins. The box holds 60 coins (1 in 4), 100 (1 in 4) or 160 (1 in 2). Everyone bids once, in secret. The top bid pays its bid and gets the box. Rivals win ties.
+- **Goal** — Start with 120 coins. End with the most, on average.
+- **Setup** — A single box holds 60, 100 or 160 coins, with chances 1 in 4, 1 in 4 and 1 in 2. Rivals peek inside; you can't. Everyone bids once, in secret. The highest bid buys the box; rivals win ties.
 - **Your choice** — Pass, Bid 40, Bid 90 or Bid 105.
 - **Characters and rules**
   - Cautious peeks, then bids half the coins inside.

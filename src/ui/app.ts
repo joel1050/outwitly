@@ -249,7 +249,7 @@ function startRound(idx: number) {
       </header>
       <div class="timer-row grace" role="timer" aria-label="Time left">
         <div class="fuse"><div class="fuse-burn"></div><i class="grace-mark" style="left:${100 * (1 - GRACE_MS / round.timeLimitMs)}%"></i></div>
-        <span class="timer-label"><b>${clock(round.timeLimitMs)}</b> · full points</span>
+        <span class="timer-label"><b>${clock(round.timeLimitMs)}</b></span>
       </div>
       <p class="setup"><span class="goal"><b>Goal:</b> ${esc(type.goal(round))}</span>${esc(type.setup(round))}</p>
       <div class="scene-slot">
@@ -341,7 +341,7 @@ function startClock(idx: number, limitMs: number) {
       shown = sec;
       const inGrace = elapsed < GRACE_MS;
       label.innerHTML = inGrace
-        ? `<b>${clock(left)}</b> · full points for ${clock(GRACE_MS - elapsed)}`
+        ? `<b>${clock(left)}</b>`
         : `<b>${clock(left)}</b> · ${Math.round(speedFactor(elapsed, limitMs) * 100)}% points`;
       row.classList.toggle('grace', inGrace);
       row.classList.toggle('hot', left <= 30_000);

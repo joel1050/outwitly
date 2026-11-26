@@ -1,0 +1,19 @@
+{
+  "id": "duel-miss-on-purpose",
+  "type": "duel",
+  "difficulty": "hard",
+  "idea": "miss-on-purpose",
+  "status": "ready",
+  "source": "hand",
+  "notes": "Launch round. Throw into the air: the two strong players aim at each other, then you throw first at the survivor.",
+  "params": {
+    "order": ["you", "cautious", "showoff"],
+    "accuracy": { "you": "1/3", "cautious": "2/3", "showoff": "1/1" },
+    "aiRule": "aimAtMostAccurateRemaining",
+    "floor": 0.2
+  },
+  "characters": [
+    { "id": "cautious", "ruleKey": "aimAtMostAccurateRemaining", "stats": { "accuracy": "2/3" } },
+    { "id": "showoff", "ruleKey": "aimAtMostAccurateRemaining", "stats": { "accuracy": "1/1" } }
+  ]
+}

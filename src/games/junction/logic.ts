@@ -1,5 +1,5 @@
-import { rule } from '../characters';
-import type { PuzzleType, TimelineEvent } from '../types';
+import { rule } from '../../engine/characters';
+import type { PuzzleType, TimelineEvent } from '../../engine/types';
 
 export interface JunctionParams {
   exits: Record<string, number>;
@@ -67,3 +67,5 @@ export const junction: PuzzleType<JunctionParams> = {
   explain: () =>
     'Aim it at six on purpose: Hero always pulls when more than two are in danger, and two pulled levers send it right, where only one stands.',
 };
+
+export default junction;

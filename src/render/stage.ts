@@ -1,6 +1,8 @@
 import { gsap } from 'gsap';
 import type { Outcome, Round, TimelineEvent } from '../engine/types';
 import { Actor } from './actor';
+import { sfx } from './audio';
+import { tag } from './fx';
 import { s, text, wait, reducedMotion, OUTLINE } from './svg';
 
 export const W = 400;
@@ -38,7 +40,47 @@ export abstract class Stage {
   }
 
   protected abstract build(): void;
-  protected abstract handle(ev: TimelineEvent): Promise<void>;
+
+  /**
+   * Plays one timeline event. A scene overrides this for the events only it knows how
+   * to draw, and passes everything else to `super.handle(ev)`, which covers the events
+   * every scene shares (see docs/animation-kit.md):
+   *   emote  -> the actor's face and pose (a 'think' shows a thought bubble)
+   *   say    -> a speech bubble over the actor
+   *   move   -> walks the actor to spot(to), if the scene defines that spot
+   *   payout -> a +N tag over the actor's head
+   * Events a scene neither handles nor passes on are skipped.
+   */
+  protected async handle(ev: TimelineEvent): Promise<void> {
+    const actor = 'actor' in ev ? this.actors[ev.actor] : undefined;
+    switch (ev.t) {
+      case 'emote':
+        await actor?.emote(ev.emote);
+        break;
+      case 'say':
+        await actor?.bubble(ev.text, 'say', 1.1);
+        break;
+      case 'move': {
+        const p = this.spot(ev.to);
+        if (actor && p) await actor.moveTo(p[0], p[1]);
+        break;
+      }
+      case 'payout':
+        if (actor && ev.amount) {
+          tag(this.fx, actor.x, actor.headY - 8, ev.amount, (n) => `+${n}`);
+          sfx('coin');
+          await wait(0.5);
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  /** Where a named place in the scene is (a chest, a pedestal, a seat), for the shared 'move' event. */
+  protected spot(_id: string): [number, number] | undefined {
+    return undefined;
+  }
   /** Highlights an option in the scene while the player is deciding. */
   abstract preview(optionId: string | null): void;
   /** Where the characters glance while the player decides. */

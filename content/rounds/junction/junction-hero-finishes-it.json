@@ -1,0 +1,11 @@
+{
+  "id": "junction-hero-finishes-it",
+  "type": "junction",
+  "difficulty": "easy",
+  "idea": "let-the-reaction-finish-it",
+  "status": "ready",
+  "source": "hand",
+  "notes": "Launch round. Aim at the worst track on purpose; Hero's pull carries it on to the best one.",
+  "params": { "exits": { "straight": 3, "left": 6, "right": 1 }, "routing": { "0": "straight", "1": "left", "2": "right" } },
+  "characters": [{ "id": "hero", "ruleKey": "pullIfHeadingAbove", "ruleArgs": { "threshold": 2 } }]
+}

@@ -1,7 +1,7 @@
-import { rule, CHARACTERS } from '../characters';
-import { Q } from '../rational';
-import { seeded, hashString } from '../rng';
-import type { PuzzleType, Round, TimelineEvent } from '../types';
+import { rule, CHARACTERS } from '../../engine/characters';
+import { Q } from '../../engine/rational';
+import { seeded, hashString } from '../../engine/rng';
+import type { PuzzleType, Round, TimelineEvent } from '../../engine/types';
 
 export interface DuelParams {
   order: string[];
@@ -132,3 +132,5 @@ export const duel: PuzzleType<DuelParams> = {
   explain: () =>
     'Miss on purpose. Soak either rival and the survivor aims straight at you; throw into the air and they soak each other, then you get first throw at whoever is left.',
 };
+
+export default duel;

@@ -1,6 +1,6 @@
-import { listJoin } from '../text';
-import { rule, CHARACTERS } from '../characters';
-import type { Outcome, PuzzleType, Round, TimelineEvent } from '../types';
+import { listJoin } from '../../engine/text';
+import { rule, CHARACTERS } from '../../engine/characters';
+import type { Outcome, PuzzleType, Round, TimelineEvent } from '../../engine/types';
 
 export interface ChestsParams { chests: number[]; order: string[] }
 
@@ -61,3 +61,5 @@ export const chests: PuzzleType<ChestsParams> = {
 };
 
 const fmt = (n: number) => (Number.isInteger(n) ? `${n}` : n.toFixed(1));
+
+export default chests;

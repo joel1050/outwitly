@@ -1,0 +1,16 @@
+{
+  "id": "pirates-cheapest-votes",
+  "type": "pirates",
+  "difficulty": "medium",
+  "idea": "buy-the-cheapest-votes",
+  "status": "ready",
+  "source": "hand",
+  "notes": "Launch round. Fair accepts you keeping exactly double its share, and Lazy votes yes for one coin.",
+  "params": { "gold": 100, "crew": ["greedy", "fair", "lazy"], "votesNeeded": 3 },
+  "characters": [
+    { "id": "greedy", "ruleKey": "yesIfAtLeast", "ruleArgs": { "min": 50 } },
+    { "id": "fair", "ruleKey": "yesIfNoneAboveDouble" },
+    { "id": "lazy", "ruleKey": "yesIfAny" }
+  ],
+  "options": { "A": [97, 1, 1, 1], "B": [49, 50, 0, 1], "C": [66, 0, 33, 1], "D": [25, 25, 25, 25] }
+}

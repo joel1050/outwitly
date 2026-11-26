@@ -1,19 +1,21 @@
 import { gsap } from 'gsap';
 import { cardText, CHARACTERS } from '../engine/characters';
-import { PUZZLES } from '../engine/registry';
-import { SAMPLE_DAY } from '../engine/sample-day';
+import { PUZZLES } from '../games/registry';
+import { dailySetFor, localDate } from '../engine/content';
 import { GRACE_MS, gradeRound, roundScore, speedFactor, square } from '../engine/scoring';
 import type { Round } from '../engine/types';
 import { portrait } from '../render/actor';
 import { initAudio, isMuted, setMuted, setSuppressed, sfx } from '../render/audio';
-import { createStage } from '../render/scenes';
+import { createStage } from '../games/scenes';
 import type { Stage } from '../render/stage';
 import { reducedMotion } from '../render/svg';
 import { DEMO_PICKS, demoHistogram, demoTopPercent } from './crowd';
 import { store, type RoundRecord } from './store';
 
-const DAY = SAMPLE_DAY;
+const DAY = dailySetFor(localDate());
 const N = DAY.rounds.length;
+/** Most points a day can give: 100 a round. */
+const MAX = N * 100;
 const root = document.getElementById('app')!;
 
 type Phase = 'home' | 'intro' | 'decide' | 'playout' | 'result' | 'end';
@@ -175,7 +177,7 @@ export function renderHome() {
       <div class="home-actions">
         ${done ? `
           <div class="done-card">
-            <div class="done-total"><b>${dayTotal(recs)}</b>/500</div>
+            <div class="done-total"><b>${dayTotal(recs)}</b>/${MAX}</div>
             <div class="squares" aria-label="Round squares">${recs.map((r) => square(r.quality)).join('')}</div>
             <p class="muted">Next set in <span class="countdown">--:--:--</span></p>
           </div>
@@ -482,7 +484,7 @@ function showResult(idx: number, optionId: string | null, score: number, quality
 // ---------- end ----------
 
 function shareText(total: number, top: number, recs: RoundRecord[]) {
-  return `Outwitly #${DAY.puzzleNumber} · ${total}/500 · Top ${top}%\n${recs.map((r) => square(r.quality)).join('')}\njoel1050.github.io/outwitly`;
+  return `Outwitly #${DAY.puzzleNumber} · ${total}/${MAX} · Top ${top}%\n${recs.map((r) => square(r.quality)).join('')}\njoel1050.github.io/outwitly`;
 }
 
 /** Copy to the clipboard. Falls back to a hidden textarea where the Clipboard API is blocked (file:// pages, old browsers). */
@@ -521,15 +523,15 @@ function bellSvg(total: number) {
   const bw = W / h.length;
   const bars = h.map((v, i) => {
     const bh = (v / max) * (H - 20);
-    const mine = Math.min(49, Math.floor(total / 10)) === i;
+    const mine = Math.min(49, Math.floor((total / MAX) * 50)) === i;
     return `<rect x="${(i * bw + 0.5).toFixed(1)}" y="${(H - bh).toFixed(1)}" width="${(bw - 1).toFixed(1)}" height="${bh.toFixed(1)}" rx="1.5" class="${mine ? 'bar mine' : 'bar'}"/>`;
   }).join('');
-  const mx = Math.min(W - 2, (total / 500) * W);
+  const mx = Math.min(W - 2, (total / MAX) * W);
   return `<svg viewBox="0 -14 ${W} ${H + 30}" class="bell" role="img" aria-label="Today's totals form a bell curve; your ${total} is marked.">
     ${bars}
     <line x1="${mx}" y1="-4" x2="${mx}" y2="${H}" class="marker"/>
     <text x="${Math.max(18, Math.min(W - 18, mx))}" y="-6" text-anchor="middle" class="marker-text">you</text>
-    <text x="0" y="${H + 14}" class="axis">0</text><text x="${W / 2}" y="${H + 14}" text-anchor="middle" class="axis">250</text><text x="${W}" y="${H + 14}" text-anchor="end" class="axis">500</text>
+    <text x="0" y="${H + 14}" class="axis">0</text><text x="${W / 2}" y="${H + 14}" text-anchor="middle" class="axis">${MAX / 2}</text><text x="${W}" y="${H + 14}" text-anchor="end" class="axis">${MAX}</text>
   </svg>`;
 }
 
@@ -538,7 +540,7 @@ function renderEnd() {
   state.phase = 'end';
   const recs = [...store.records(DAY.puzzleNumber)].sort((a, b) => a.round - b.round);
   const total = dayTotal(recs);
-  const top = demoTopPercent(total);
+  const top = demoTopPercent((total * 500) / MAX);
   const rows = recs.map((r) => {
     const round = DAY.rounds[r.round - 1];
     const type = PUZZLES[round.type];
@@ -557,7 +559,7 @@ function renderEnd() {
     <main class="end screen">
       <header class="bar"><span class="round-meta">Outwitly #${DAY.puzzleNumber}</span>${controls()}</header>
       <section class="end-hero">
-        <div class="total"><span class="big">0</span><span class="of">/500</span></div>
+        <div class="total"><span class="big">0</span><span class="of">/${MAX}</span></div>
         <div class="pct">Top ${top}%</div>
         ${bellSvg(total)}
         <p class="demo-note">Bell curve and percentile use demo data.</p>

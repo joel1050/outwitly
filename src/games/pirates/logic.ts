@@ -1,6 +1,6 @@
-import { listJoin } from '../text';
-import { rule, CHARACTERS } from '../characters';
-import type { PuzzleType, Round, TimelineEvent } from '../types';
+import { listJoin } from '../../engine/text';
+import { rule, CHARACTERS } from '../../engine/characters';
+import type { PuzzleType, Round, TimelineEvent } from '../../engine/types';
 
 export interface PiratesParams { gold: number; crew: string[]; votesNeeded: number }
 type Splits = Record<string, number[]>;
@@ -78,3 +78,5 @@ export const pirates: PuzzleType<PiratesParams> = {
   explain: () =>
     'Buy off Fair, not Greedy: Fair accepts you keeping exactly double its share, and Lazy votes yes for a single coin.',
 };
+
+export default pirates;

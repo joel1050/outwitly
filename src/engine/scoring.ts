@@ -1,4 +1,4 @@
-import { PUZZLES } from './registry';
+import { PUZZLES } from '../games/registry';
 import type { Outcome, Round } from './types';
 
 export interface Graded {

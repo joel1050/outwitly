@@ -1,10 +1,10 @@
 import { gsap } from 'gsap';
-import { PUZZLES } from '../../engine/registry';
+import { chests as logic } from './logic';
 import type { TimelineEvent } from '../../engine/types';
-import { sfx } from '../audio';
-import { coinArc, sparkle, tag } from '../fx';
-import { Stage, W } from '../stage';
-import { s, text, wait, OUTLINE } from '../svg';
+import { sfx } from '../../render/audio';
+import { coinArc, sparkle, tag } from '../../render/fx';
+import { Stage, W } from '../../render/stage';
+import { s, text, wait, OUTLINE } from '../../render/svg';
 
 const ol = (w = 3) => ({ stroke: OUTLINE, 'stroke-width': w, 'stroke-linejoin': 'round' });
 const CHEST_Y = 150;
@@ -57,7 +57,7 @@ export class ChestsStage extends Stage {
       const x = 46 + i * ((W - 92) / (order.length - 1));
       this.addActor(id, x, 286, 0.9);
     });
-    this.svg.setAttribute('aria-label', PUZZLES.chests.setup(this.round));
+    this.svg.setAttribute('aria-label', logic.setup(this.round));
   }
 
   preview(optionId: string | null) {
@@ -73,7 +73,7 @@ export class ChestsStage extends Stage {
   protected looks(optionId: string | null) {
     // Each character glances at the chest its rule would pick if you chose this option.
     const pick = optionId ?? `c${Math.max(...(this.round.params.chests as number[]))}`;
-    const out = PUZZLES.chests.resolve(this.round, pick);
+    const out = logic.resolve(this.round, pick);
     for (const ev of out.events) {
       if (ev.t === 'move' && ev.actor !== 'you') this.actors[ev.actor].lookAt(this.chestX[ev.to], CHEST_Y - 20);
     }
@@ -118,7 +118,9 @@ export class ChestsStage extends Stage {
         break;
       }
       default:
-        break;
+        await super.handle(ev);
     }
   }
 }
+
+export default ChestsStage;

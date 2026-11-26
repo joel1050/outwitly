@@ -1,0 +1,16 @@
+{
+  "id": "chests-pile-on",
+  "type": "chests",
+  "difficulty": "easy",
+  "idea": "everyone-piles-on",
+  "status": "ready",
+  "source": "hand",
+  "notes": "Launch round. Greedy, Copycat and Show-off all end up on the 100; Loner always heads elsewhere, so the 60 is yours alone.",
+  "params": { "chests": [100, 60, 30, 10], "order": ["you", "greedy", "copycat", "showoff", "loner"] },
+  "characters": [
+    { "id": "greedy", "ruleKey": "biggest" },
+    { "id": "copycat", "ruleKey": "copy", "ruleArgs": { "target": "greedy" } },
+    { "id": "showoff", "ruleKey": "mostOccupied", "ruleArgs": { "tieBreak": "bigger" } },
+    { "id": "loner", "ruleKey": "biggestEmpty" }
+  ]
+}

@@ -1,11 +1,11 @@
 import { gsap } from 'gsap';
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
-import { PUZZLES } from '../../engine/registry';
+import { junction as logic } from './logic';
 import type { TimelineEvent } from '../../engine/types';
-import { sfx } from '../audio';
-import { dust, shake, burst } from '../fx';
-import { Stage, W } from '../stage';
-import { s, text, wait, OUTLINE, reducedMotion } from '../svg';
+import { sfx } from '../../render/audio';
+import { dust, shake, burst } from '../../render/fx';
+import { Stage, W } from '../../render/stage';
+import { s, text, wait, OUTLINE, reducedMotion } from '../../render/svg';
 
 gsap.registerPlugin(MotionPathPlugin);
 
@@ -97,7 +97,7 @@ export class JunctionStage extends Stage {
 
     this.addActor('you', 95, 290, 0.85);
     this.addActor('hero', 305, 290, 0.85);
-    this.svg.setAttribute('aria-label', PUZZLES.junction.setup(this.round));
+    this.svg.setAttribute('aria-label', logic.setup(this.round));
   }
 
   preview(optionId: string | null) {
@@ -163,7 +163,7 @@ export class JunctionStage extends Stage {
       }
       case 'emote': {
         if (ev.emote === 'think') {
-          await this.actors[ev.actor].bubble(`${this.exits[this.headingExit]} > 2!`, 'think', 0.55);
+          await this.actors[ev.actor].bubble(`${this.exits[this.headingExit]} > ${this.round.characters[0].ruleArgs.threshold}!`, 'think', 0.55);
         }
         break;
       }
@@ -196,7 +196,9 @@ export class JunctionStage extends Stage {
         break;
       }
       default:
-        break;
+        await super.handle(ev);
     }
   }
 }
+
+export default JunctionStage;

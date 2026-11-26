@@ -1,0 +1,18 @@
+{
+  "id": "agenda-voting-cycle",
+  "type": "agenda",
+  "difficulty": "medium",
+  "idea": "favourite-enters-last",
+  "status": "ready",
+  "source": "hand",
+  "notes": "Launch round. The rankings form a cycle, so whatever enters the last vote wins.",
+  "params": {
+    "proposals": ["fountain", "skatepark", "garden"],
+    "yourValues": { "garden": 100, "fountain": 50, "skatepark": 0 }
+  },
+  "characters": [
+    { "id": "greedy", "ruleKey": "ranking", "ruleArgs": ["skatepark", "garden", "fountain"] },
+    { "id": "fair", "ruleKey": "ranking", "ruleArgs": ["garden", "fountain", "skatepark"] },
+    { "id": "cautious", "ruleKey": "ranking", "ruleArgs": ["fountain", "skatepark", "garden"] }
+  ]
+}

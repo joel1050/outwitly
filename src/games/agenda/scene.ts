@@ -1,10 +1,10 @@
 import { gsap } from 'gsap';
-import { PUZZLES } from '../../engine/registry';
+import { agenda as logic } from './logic';
 import type { TimelineEvent } from '../../engine/types';
-import { sfx } from '../audio';
-import { confetti, shake } from '../fx';
-import { Stage, W } from '../stage';
-import { s, text, OUTLINE } from '../svg';
+import { sfx } from '../../render/audio';
+import { confetti, shake } from '../../render/fx';
+import { Stage, W } from '../../render/stage';
+import { s, text, OUTLINE } from '../../render/svg';
 
 const ol = (w = 3) => ({ stroke: OUTLINE, 'stroke-width': w, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' });
 const title = (x: string) => x.charAt(0).toUpperCase() + x.slice(1);
@@ -79,7 +79,7 @@ export class AgendaStage extends Stage {
     this.round.characters.forEach((c, i) => { xs[c.id] = [50, 120, 280][i]; });
     for (const c of this.round.characters) this.addActor(c.id, xs[c.id], 288, 0.9);
     this.addActor('you', 350, 288, 0.9);
-    this.svg.setAttribute('aria-label', PUZZLES.agenda.setup(this.round));
+    this.svg.setAttribute('aria-label', logic.setup(this.round));
   }
 
   preview(optionId: string | null) {
@@ -159,7 +159,9 @@ export class AgendaStage extends Stage {
         break;
       }
       default:
-        break;
+        await super.handle(ev);
     }
   }
 }
+
+export default AgendaStage;

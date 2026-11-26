@@ -1,6 +1,6 @@
-import { listJoin } from '../text';
-import { rule, CHARACTERS } from '../characters';
-import type { PuzzleType, Round, TimelineEvent } from '../types';
+import { listJoin } from '../../engine/text';
+import { rule, CHARACTERS } from '../../engine/characters';
+import type { PuzzleType, Round, TimelineEvent } from '../../engine/types';
 
 export interface AgendaParams { proposals: string[]; yourValues: Record<string, number> }
 
@@ -60,3 +60,5 @@ export const agenda: PuzzleType<AgendaParams> = {
   explain: () =>
     'Each proposal beats one rival and loses to the other, so the order decides. Keep the Garden out of the first vote and set it against the only rival it beats.',
 };
+
+export default agenda;

@@ -1,11 +1,11 @@
 import { gsap } from 'gsap';
 import { CHARACTERS } from '../../engine/characters';
-import { PUZZLES } from '../../engine/registry';
+import { duel as logic } from './logic';
 import type { Outcome, TimelineEvent } from '../../engine/types';
-import { sfx } from '../audio';
-import { burst, shake, splash } from '../fx';
-import { Stage, W } from '../stage';
-import { s, wait, OUTLINE, reducedMotion } from '../svg';
+import { sfx } from '../../render/audio';
+import { burst, shake, splash } from '../../render/fx';
+import { Stage, W } from '../../render/stage';
+import { s, wait, OUTLINE, reducedMotion } from '../../render/svg';
 
 const ol = (w = 3) => ({ stroke: OUTLINE, 'stroke-width': w, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' });
 const POS: Record<string, [number, number, number]> = { you: [78, 258, 1], cautious: [322, 258, 1], showoff: [200, 132, 0.85] };
@@ -35,7 +35,7 @@ export class DuelStage extends Stage {
       s('path', { d: 'M-18 -6 q4 -4 8 0 M6 -10 q4 -4 8 0', fill: 'none', class: 'c-hedge-line', 'stroke-width': 2 }, hedge);
       this.label(this.front, x, y + 22 * k, ACC_TEXT(acc[id]), 'acc-pill');
     }
-    this.svg.setAttribute('aria-label', PUZZLES.duel.setup(this.round));
+    this.svg.setAttribute('aria-label', logic.setup(this.round));
   }
 
   preview(optionId: string | null) {
@@ -78,7 +78,7 @@ export class DuelStage extends Stage {
   }
 
   protected async handle(ev: TimelineEvent) {
-    if (ev.t !== 'throw') return;
+    if (ev.t !== 'throw') return super.handle(ev);
     const from = this.head(ev.actor);
     const b = s('g', {}, this.fx);
     s('circle', { r: 7, fill: '#5BA7D1', ...ol(2) }, b);
@@ -146,3 +146,5 @@ export class DuelStage extends Stage {
     }
   }
 }
+
+export default DuelStage;

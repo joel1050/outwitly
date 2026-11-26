@@ -1,0 +1,255 @@
+{
+  "_readme": "One entry per scenario (game type), whatever its stage. status: live = has code in src/games/<id>/ and may be scheduled; approved = chosen to build next; proposed = not yet decided; rejected = not building, with the reason. Each entry has a spec sheet in content/scenarios/<id>.md.",
+  "scenarios": [
+    {
+      "id": "chests",
+      "name": "Chests",
+      "family": "crowding",
+      "status": "live",
+      "source": "launch demo",
+      "idea": "everyone-piles-on",
+      "sheet": "content/scenarios/chests.md",
+      "code": "src/games/chests/"
+    },
+    {
+      "id": "junction",
+      "name": "Junction",
+      "family": "trust",
+      "status": "live",
+      "source": "launch demo",
+      "idea": "let-the-reaction-finish-it",
+      "sheet": "content/scenarios/junction.md",
+      "code": "src/games/junction/"
+    },
+    {
+      "id": "pirates",
+      "name": "Pirates",
+      "family": "splitting",
+      "status": "live",
+      "source": "launch demo",
+      "idea": "buy-the-cheapest-votes",
+      "sheet": "content/scenarios/pirates.md",
+      "code": "src/games/pirates/"
+    },
+    {
+      "id": "agenda",
+      "name": "Agenda",
+      "family": "voting",
+      "status": "live",
+      "source": "launch demo",
+      "idea": "favourite-enters-last",
+      "sheet": "content/scenarios/agenda.md",
+      "code": "src/games/agenda/"
+    },
+    {
+      "id": "duel",
+      "name": "Duel",
+      "family": "conflict",
+      "status": "live",
+      "source": "launch demo",
+      "idea": "miss-on-purpose",
+      "sheet": "content/scenarios/duel.md",
+      "code": "src/games/duel/"
+    },
+    {
+      "id": "two-lots",
+      "name": "Two Lots",
+      "family": "bidding",
+      "status": "approved",
+      "source": "GPT-6.2 Sol (high)",
+      "idea": "Set the rival’s price",
+      "sheet": "content/scenarios/two-lots.md",
+      "note": "Pick for the bidding family; simpler than the ladder version."
+    },
+    {
+      "id": "auction-booth",
+      "name": "Auction Booth",
+      "family": "bidding",
+      "status": "rejected",
+      "source": "GPT-6.2 Sol (high)",
+      "idea": "Charge for entry without losing competition",
+      "sheet": "content/scenarios/auction-booth.md",
+      "note": "Entry fees, budgets and bids interact in ways too hard to follow in 3 minutes."
+    },
+    {
+      "id": "tile-stack",
+      "name": "Tile Stack",
+      "family": "ahead",
+      "status": "approved",
+      "source": "GPT-6.2 Sol (high)",
+      "idea": "Leave the right remainder",
+      "sheet": "content/scenarios/tile-stack.md",
+      "note": "Classic take-the-last-tile puzzle; easy to read."
+    },
+    {
+      "id": "pie-relay",
+      "name": "Pie Relay",
+      "family": "ahead",
+      "status": "rejected",
+      "source": "GPT-6.2 Sol (high)",
+      "idea": "Bake what unlocks the next job",
+      "sheet": "content/scenarios/pie-relay.md",
+      "note": "Oven-heat matching is fiddly to read and the idea is weak."
+    },
+    {
+      "id": "delivery-bond",
+      "name": "Delivery Bond",
+      "family": "trust",
+      "status": "proposed",
+      "source": "GPT-6.2 Sol (high)",
+      "idea": "Set a bond the courier can afford",
+      "sheet": "content/scenarios/delivery-bond.md",
+      "note": "Promising trust puzzle; needs a simpler way to show bond and fee."
+    },
+    {
+      "id": "parcel-line",
+      "name": "Parcel Line",
+      "family": "trust",
+      "status": "rejected",
+      "source": "GPT-6.2 Sol (high)",
+      "idea": "Clear space for the right inspector",
+      "sheet": "content/scenarios/parcel-line.md",
+      "note": "Inspection windows and two flags per parcel take several readings."
+    },
+    {
+      "id": "ferry-launch",
+      "name": "Ferry Launch",
+      "family": "crowding",
+      "status": "proposed",
+      "source": "GPT-6.2 Sol (high)",
+      "idea": "Fill seats to leave sooner",
+      "sheet": "content/scenarios/ferry-launch.md",
+      "note": "Fun idea; check that boarding order and launch times read clearly."
+    },
+    {
+      "id": "cookie-cut",
+      "name": "Cookie Cut",
+      "family": "splitting",
+      "status": "approved",
+      "source": "GPT-6.2 Sol (high)",
+      "idea": "Give away quantity and keep quality",
+      "sheet": "content/scenarios/cookie-cut.md",
+      "note": "Simplest splitting puzzle in either set."
+    },
+    {
+      "id": "last-ballot",
+      "name": "Last Ballot",
+      "family": "voting",
+      "status": "approved",
+      "source": "GPT-6.2 Sol (high)",
+      "idea": "Back a rival to redirect the transfer",
+      "sheet": "content/scenarios/last-ballot.md",
+      "note": "Good hard voting round (ranked ballots)."
+    },
+    {
+      "id": "snow-lines",
+      "name": "Snow Lines",
+      "family": "conflict",
+      "status": "approved",
+      "source": "GPT-6.2 Sol (high)",
+      "idea": "Draw the strongest defender away",
+      "sheet": "content/scenarios/snow-lines.md",
+      "note": "Clearer than Three Towers, which has the same idea."
+    },
+    {
+      "id": "two-lots-ladder",
+      "name": "Two Lots (ladder version)",
+      "family": "bidding",
+      "status": "proposed",
+      "source": "Gemini 4 Neon (xhigh)",
+      "idea": "Overbid Lot 1 to drain a rival's wallet for Lot 2",
+      "sheet": "content/scenarios/two-lots-ladder.md",
+      "note": "Same idea as Two Lots with more rivals; keep as a harder variant."
+    },
+    {
+      "id": "mystery-box",
+      "name": "Mystery Box",
+      "family": "bidding",
+      "status": "approved",
+      "source": "Gemini 4 Neon (xhigh)",
+      "idea": "Account for the winner's curse: winning means informed rivals walked away",
+      "sheet": "content/scenarios/mystery-box.md",
+      "note": "Winner’s curse with stated odds; suits hard rounds."
+    },
+    {
+      "id": "river-fork",
+      "name": "River Fork",
+      "family": "ahead",
+      "status": "rejected",
+      "source": "Gemini 4 Neon (xhigh)",
+      "idea": "Work backward from the final forks to see where each branch ends",
+      "sheet": "content/scenarios/river-fork.md",
+      "note": "Good idea, but needs a branching river map: new art and layout. Revisit later."
+    },
+    {
+      "id": "magic-pond",
+      "name": "Magic Pond",
+      "family": "ahead",
+      "status": "approved",
+      "source": "Gemini 4 Neon (xhigh)",
+      "idea": "Trim the resource just under a rival's trigger without killing regrowth",
+      "sheet": "content/scenarios/magic-pond.md",
+      "note": "Fresh thinking-ahead idea."
+    },
+    {
+      "id": "chip-in",
+      "name": "Chip In",
+      "family": "trust",
+      "status": "approved",
+      "source": "Gemini 4 Neon (xhigh)",
+      "idea": "Seed just enough to start a chain of conditional cooperators",
+      "sheet": "content/scenarios/chip-in.md",
+      "note": "Seed a chain of conditional helpers; clear and new."
+    },
+    {
+      "id": "the-pact",
+      "name": "The Pact",
+      "family": "trust",
+      "status": "proposed",
+      "source": "Gemini 4 Neon (xhigh)",
+      "idea": "Stay loyal while the alliance holds, then defect the exact day a traitor breaks it",
+      "sheet": "content/scenarios/the-pact.md",
+      "note": "Repeated trust game; check it reads well in 3 minutes."
+    },
+    {
+      "id": "roadblock",
+      "name": "Roadblock",
+      "family": "crowding",
+      "status": "approved",
+      "source": "Gemini 4 Neon (xhigh)",
+      "idea": "Remove a tempting shortcut so drivers spread across separate roads",
+      "sheet": "content/scenarios/roadblock.md",
+      "note": "Braess’s paradox; keep settings small enough to solve in your head."
+    },
+    {
+      "id": "cake-cut",
+      "name": "Cake Cut",
+      "family": "splitting",
+      "status": "rejected",
+      "source": "Gemini 4 Neon (xhigh)",
+      "idea": "Slice so rivals grab bulky low-value chunks and leave a dense gem behind",
+      "sheet": "content/scenarios/cake-cut.md",
+      "note": "Fair’s second cut has too many tie rules to read quickly."
+    },
+    {
+      "id": "roll-call",
+      "name": "Roll Call",
+      "family": "voting",
+      "status": "approved",
+      "source": "Gemini 4 Neon (xhigh)",
+      "idea": "Vote away from your favourite so an underdog voter launches a bandwagon for it",
+      "sheet": "content/scenarios/roll-call.md",
+      "note": "Best “aha” in either set and easy to read."
+    },
+    {
+      "id": "three-towers",
+      "name": "Three Towers",
+      "family": "conflict",
+      "status": "proposed",
+      "source": "Gemini 4 Neon (xhigh)",
+      "idea": "Bait a rival to overspend on one tower so you hold the flanks",
+      "sheet": "content/scenarios/three-towers.md",
+      "note": "Same idea as Snow Lines; keep as a variant."
+    }
+  ]
+}

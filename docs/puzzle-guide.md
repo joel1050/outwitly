@@ -2,6 +2,21 @@
 
 How the game works, the five scenarios in the demo, and how to build a new scenario and a new round.
 
+## Where things live
+
+| What | Where | Notes |
+|---|---|---|
+| Scenario list | `content/catalog.json` | Every scenario with its status: `live`, `approved`, `proposed` or `rejected` (with the reason). |
+| Scenario specs | `content/scenarios/<id>.md` | One sheet per scenario: story, rules, trap, idea, what can vary. |
+| Game type code | `src/games/<id>/` | `logic.ts` (rules and solver) and `scene.ts` (the animation). Found automatically; nothing else to register. |
+| Rounds | `content/rounds/<type>/<id>.json` | One file per round. See "Round files" below. |
+| Schedule | `content/schedule.json` | Date → round ids, in play order. |
+| Characters | `src/engine/characters.ts` | Each rule and its card text sit together, so a card can't disagree with its rule. |
+| Animation kit | `src/render/` | See `docs/animation-kit.md`. |
+| Raw model proposals | `docs/proposals/` | Kept as a record. The sheets in `content/scenarios/` are the working copies. |
+
+`npm test` checks all of it: every round solves, every `ready` round passes the checks below, the schedule follows its rules, and the catalogue matches the code.
+
 ## The game
 
 Outwitly is a daily browser game. Each day brings a short set of rounds; we are moving from five rounds to **three a day (easy, medium, hard)**, so we need about **93 rounds a month**.
@@ -23,62 +38,15 @@ Because every rule is exact, every option has one true result, and the code work
 
 ## The five scenarios in the demo
 
-### 1. Chests (family: crowding, easy)
+Each has a spec sheet in `content/scenarios/`, with its story, rules, every option's result, the trap, the idea and what can vary. Read them before designing a new one.
 
-- **Story:** Four treasure chests on a beach hold 100, 60, 30 and 10 coins. Everyone on a chest splits it equally.
-- **Goal:** Get as many coins as you can.
-- **Your choice:** which chest to stand on. You pick first, then the characters pick in turn, each seeing every earlier pick.
-- **Characters:**
-  - Greedy: Takes the biggest chest, even if others are on it.
-  - Copycat: Picks the same chest as Greedy.
-  - Show-off: Joins the chest with the most characters on it, you included (ties go to the bigger chest).
-  - Loner: Takes the biggest chest nobody is on yet.
-- **Results:** 100 → shared four ways, 25. 60 → alone, 60. 30 → alone, 30. 10 → 10.
-- **Best:** 60. **Trap:** 100. **Idea:** everyone piles on the biggest prize, so the second biggest is yours alone.
-- **Can vary:** chest values, number of chests, which characters appear and in what order, the copy target.
-
-### 2. Junction (family: trust, easy)
-
-- **Story:** A trolley is heading straight for 3 people. The left track has 6 people, the right track 1. You and Hero each have a lever. One pull sends it left; two send it right. Hero decides after you.
-- **Goal:** The trolley hits as few people as possible (lower is better).
-- **Your choice:** Pull, Leave, or Jam (Hero can't pull).
-- **Character:** Hero: After you move, pulls if it's heading for more than 2 people.
-- **Results:** Leave → heading for 3, Hero pulls → left, 6 hit. Pull → heading for 6, Hero pulls → right, 1 hit. Jam → straight, 3 hit.
-- **Best:** Pull. **Trap:** Leave. **Idea:** aim it at the worst track on purpose, because Hero's reaction carries it on to the best one.
-- **Can vary:** people on each track, how pulls map to tracks, Hero's threshold, a second helper.
-
-### 3. Pirates (family: splitting, medium)
-
-- **Story:** You are the pirate captain splitting 100 gold with Greedy, Fair and Lazy. You need 3 of 4 yes votes, and you always vote yes. Fail and you walk the plank with nothing.
-- **Goal:** Keep as much gold as you can.
-- **Your choice:** one of four fixed splits (you / Greedy / Fair / Lazy): A 97/1/1/1, B 49/50/0/1, C 66/0/33/1, D 25/25/25/25.
-- **Characters:**
-  - Greedy: Votes yes only if it gets 50 gold or more.
-  - Fair: Votes yes only if nobody gets over twice what Fair gets.
-  - Lazy: Votes yes if it gets anything at all.
-- **Results:** A fails (2 yes), 0. B passes, 49. C passes, 66. D passes, 25.
-- **Best:** C. **Trap:** A (keeps the most if it passed). **Idea:** buy the cheapest votes; Fair accepts you keeping exactly double its share.
-- **Can vary:** gold, votes needed, each character's price, the four splits on offer.
-
-### 4. Agenda (family: voting, medium)
-
-- **Story:** One of three proposals gets built: Fountain, Skatepark or Garden. Greedy, Fair and Cautious vote; you don't. You pick the first pair. Its winner faces the third; majority wins each vote. Each voter backs whichever option it ranks higher.
-- **Goal:** Get the Garden built. Second best: the Fountain. (Your values: Garden 100, Fountain 50, Skatepark 0.)
-- **Your choice:** which pair votes first.
-- **Characters (rankings):** Greedy: Skatepark > Garden > Fountain. Fair: Garden > Fountain > Skatepark. Cautious: Fountain > Skatepark > Garden.
-- **Results:** The rankings form a cycle (Garden beats Fountain, Fountain beats Skatepark, Skatepark beats Garden). Garden vs Fountain first → Skatepark built, 0. Garden vs Skatepark first → Fountain, 50. Fountain vs Skatepark first → Garden, 100.
-- **Best:** Fountain vs Skatepark. **Trap:** putting your favourite in the first vote. **Idea:** with a voting cycle, whatever enters last wins; keep your favourite out until the end.
-- **Can vary:** proposals, rankings, your values, number of voters.
-
-### 5. Duel (family: conflict, hard)
-
-- **Story:** Water-balloon duel. One hit and you're out; the last one dry wins. You hit 1 in 3, Cautious 2 in 3, Show-off never misses. Turns go you, Cautious, Show-off, repeat.
-- **Goal:** Best chance of being the last one dry.
-- **Your choice:** your first throw: at Show-off, at Cautious, or into the air. After that you, like everyone, aim at the most accurate rival still dry.
-- **Character rule:** Aims at the most accurate other player still dry.
-- **Results (exact odds):** Air 39.7%, at Show-off 31.2%, at Cautious 26.5%.
-- **Best:** the air. **Trap:** Show-off, the biggest threat. **Idea:** miss on purpose; the two strong players aim at each other, then you get the first throw at the survivor.
-- **Can vary:** accuracies, turn order, number of players, the aim rule.
+| Scenario | Family | Choice | Idea |
+|---|---|---|---|
+| [Chests](../content/scenarios/chests.md) | crowding | which chest to stand on | everyone piles on the biggest prize |
+| [Junction](../content/scenarios/junction.md) | trust | pull, leave or jam a lever | aim at the worst track; Hero's pull carries it on |
+| [Pirates](../content/scenarios/pirates.md) | splitting | which split of the gold | buy the cheapest votes |
+| [Agenda](../content/scenarios/agenda.md) | voting | which pair votes first | in a voting cycle, whatever enters last wins |
+| [Duel](../content/scenarios/duel.md) | conflict | where your first balloon goes | miss on purpose |
 
 ### Characters so far
 
@@ -146,30 +114,69 @@ Use this template for each scenario:
 - **Difficulty range:** which settings make it easy, medium or hard.
 ```
 
-## How to describe an example round
+## Round files
 
-A round is data. It fits the engine's `Round` type:
+A round is one JSON file, `content/rounds/<type>/<id>.json`. The file name is the id.
 
-```ts
+```json
 {
-  index: 1,
-  type: 'chests',              // the scenario id
-  difficulty: 'easy',
-  timeLimitMs: 180000,
-  params: { chests: [100, 60, 30, 10], order: ['you', 'greedy', 'copycat', 'showoff', 'loner'] },
-  characters: [
-    { id: 'greedy', ruleKey: 'biggest' },
-    { id: 'copycat', ruleKey: 'copy', ruleArgs: { target: 'greedy' } },
-    { id: 'showoff', ruleKey: 'mostOccupied', ruleArgs: { tieBreak: 'bigger' } },
-    { id: 'loner', ruleKey: 'biggestEmpty' },
-  ],
+  "id": "chests-pile-on",
+  "type": "chests",
+  "difficulty": "easy",
+  "idea": "everyone-piles-on",
+  "status": "ready",
+  "source": "hand",
+  "notes": "Greedy, Copycat and Show-off all end up on the 100; Loner heads elsewhere.",
+  "params": { "chests": [100, 60, 30, 10], "order": ["you", "greedy", "copycat", "showoff", "loner"] },
+  "characters": [
+    { "id": "greedy", "ruleKey": "biggest" },
+    { "id": "copycat", "ruleKey": "copy", "ruleArgs": { "target": "greedy" } },
+    { "id": "showoff", "ruleKey": "mostOccupied", "ruleArgs": { "tieBreak": "bigger" } },
+    { "id": "loner", "ruleKey": "biggestEmpty" }
+  ]
 }
 ```
 
-For an example round, give:
+| Field | Meaning |
+|---|---|
+| `id` | Same as the file name. Start with the type, then a few words: `chests-pile-on`. |
+| `type` | The game type; must match the folder. |
+| `difficulty` | `easy`, `medium` or `hard`. A day runs from easier to harder. |
+| `idea` | The insight that solves it, as a short tag. The schedule keeps the same idea at least 14 days apart, so reuse a tag only when the idea really is the same. |
+| `status` | `draft` while you work on it (checks are reported, not enforced), `ready` when it may be scheduled (every check must pass), `retired` when it should never come back. |
+| `source` | `hand` for hand-made rounds. |
+| `obviousIsBest` | Optional. Set it on the rare round where the obvious move is right; the check then demands that it wins. |
+| `timeLimitMs` | Optional. Defaults to 3 minutes. |
+| `notes` | Why the round works, for whoever reviews it. |
+| `params`, `characters`, `options` | What the game type needs. See its spec sheet and `src/games/<type>/logic.ts`. |
 
-1. The `Round` data as above.
+## How to hand-make a round
+
+The rules and the twist are where the fun is, so people make rounds by hand. Code only checks them.
+
+1. Pick a live game type and an idea you haven't used lately (`content/schedule.json` shows what ran recently).
+2. Copy a round file in `content/rounds/<type>/`, rename it, set `"status": "draft"`, and change the numbers, the cast or the rules.
+3. Run `npm run rounds -- <id>`. It prints the goal, setup and cards as the player sees them, then every option with its result and quality, marks the best (★) and the obvious (⚠) option, and lists each check with ✓ or ✗.
+4. Change it until it reads well and every check passes. Then play it in the app (`npm run dev`) to see the scene.
+5. Set `"status": "ready"` and add its id to a date in `content/schedule.json`. Run `npm test`.
+
+`npm run rounds -- --failing` lists only rounds that fail a check.
+
+A character's rule must already exist in `src/engine/characters.ts`. To add one, add the rule and its card text to that character, in the same entry.
+
+## How to describe an example round in a proposal
+
+When proposing a new scenario, give one example round:
+
+1. The round file, as above.
 2. The text the player sees: goal, setup, each card, each option label.
 3. A table with every option: what happens step by step, its value, and its quality.
 4. The best option, the trap, and the "Best:" explanation shown after the round (one or two sentences).
 5. Proof: the output of a small script that works out every option's value from the rules.
+
+## How to add a game type
+
+1. Create `src/games/<id>/logic.ts` that default-exports a `PuzzleType` whose `id` is the folder name. It must solve every option exactly.
+2. Create `src/games/<id>/scene.ts` that default-exports a `Stage` subclass. See `docs/animation-kit.md`.
+3. Set the scenario's status to `live` in `content/catalog.json` and bring its spec sheet up to date.
+4. Add at least one round in `content/rounds/<id>/` and run `npm run rounds -- <id>` and `npm test`.

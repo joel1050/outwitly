@@ -1,10 +1,10 @@
 import { gsap } from 'gsap';
-import { PUZZLES } from '../../engine/registry';
+import { pirates as logic } from './logic';
 import type { TimelineEvent } from '../../engine/types';
-import { sfx } from '../audio';
-import { coinArc, shake, splash, tag } from '../fx';
-import { Stage, W } from '../stage';
-import { s, text, wait, OUTLINE } from '../svg';
+import { sfx } from '../../render/audio';
+import { coinArc, shake, splash, tag } from '../../render/fx';
+import { Stage, W } from '../../render/stage';
+import { s, text, wait, OUTLINE } from '../../render/svg';
 
 const ol = (w = 3) => ({ stroke: OUTLINE, 'stroke-width': w, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' });
 const DECK = 204;
@@ -51,7 +51,7 @@ export class PiratesStage extends Stage {
         s('circle', { cx: 0, cy: -55, r: 3, fill: '#F4EBDD' }, a.bob);
       }
     }
-    this.svg.setAttribute('aria-label', PUZZLES.pirates.setup(this.round));
+    this.svg.setAttribute('aria-label', logic.setup(this.round));
   }
 
   preview(optionId: string | null) {
@@ -130,7 +130,9 @@ export class PiratesStage extends Stage {
       case 'payout':
         break;
       default:
-        break;
+        await super.handle(ev);
     }
   }
 }
+
+export default PiratesStage;

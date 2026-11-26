@@ -446,7 +446,7 @@ function showResult(idx: number, optionId: string | null, score: number, quality
   const type = PUZZLES[round.type];
   const best = graded.find((g) => g.optionId === bestId)!;
   const mine = optionId ? graded.find((g) => g.optionId === optionId)! : null;
-  const picks = DEMO_PICKS[round.index] ?? {};
+  const picks = DEMO_PICKS[round.id ?? ""] ?? {};
   const panel = root.querySelector<HTMLElement>('.panel')!;
   const sq = square(quality);
   const isLast = idx === N - 1;

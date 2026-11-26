@@ -2,12 +2,18 @@
  * Demo crowd data. The real game gets these from /api/stats after you submit;
  * this demo has no backend, so the numbers below are made up and labelled as such.
  */
-export const DEMO_PICKS: Record<number, Record<string, number>> = {
-  1: { c100: 38, c60: 41, c30: 15, c10: 6 },
-  2: { pull: 34, leave: 41, jam: 25 },
-  3: { A: 21, B: 30, C: 32, D: 17 },
-  4: { garden_fountain_first: 33, garden_skatepark_first: 25, fountain_skatepark_first: 42 },
-  5: { showoff: 61, cautious: 26, air: 13 },
+/** Made-up share of players picking each option, in percent, by round id. */
+export const DEMO_PICKS: Record<string, Record<string, number>> = {
+  // Day 0.1
+  'chests-pile-on': { c100: 38, c60: 41, c30: 15, c10: 6 },
+  'junction-hero-finishes-it': { pull: 34, leave: 41, jam: 25 },
+  'pirates-cheapest-votes': { A: 21, B: 30, C: 32, D: 17 },
+  'agenda-voting-cycle': { garden_fountain_first: 33, garden_skatepark_first: 25, fountain_skatepark_first: 42 },
+  'duel-miss-on-purpose': { showoff: 61, cautious: 26, air: 13 },
+  // Day 0.2
+  'cookie-cut-chocolate-pair': { cut4: 52, cut3: 31, cut1: 17 },
+  'roll-call-town-hall-swing': { Park: 47, Pool: 29, Mall: 24 },
+  'mystery-box-knothole-auction': { pass: 14, bid40: 23, bid90: 41, bid105: 22 },
 };
 
 const MEAN = 300;

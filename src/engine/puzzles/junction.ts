@@ -14,8 +14,10 @@ export const junction: PuzzleType<JunctionParams> = {
   betterIs: 'lower',
   goal: () => 'The trolley hits as few people as possible.',
   setup: (r) => {
-    const e = r.params.exits;
-    return `A trolley is coming. One lever pulled sends it left; both send it right; neither, straight. Straight: ${e.straight}. Left: ${e.left}. Right: ${e.right}. Hero acts after you.`;
+    const { exits: e, routing } = r.params;
+    const n = (k: string) => `${e[k]} ${e[k] === 1 ? 'person' : 'people'}`;
+    // Built from the routing, so the text always matches how the levers work.
+    return `A trolley is heading ${routing[0]} for ${n(routing[0])}. The left track has ${n('left')}, the right track ${n('right')}. You and Hero each have a lever. One pull sends it ${routing[1]}; two send it ${routing[2]}. Hero decides after you.`;
   },
   options: () => [
     { id: 'pull', label: 'Pull', detail: 'your lever' },
@@ -56,8 +58,8 @@ export const junction: PuzzleType<JunctionParams> = {
     events.push({ t: 'emote', actor: hero.id, emote: hit <= 1 ? 'smug' : 'shock' });
 
     const what =
-      optionId === 'pull' ? `You pulled, aiming it left at ${exits.left}. Hero pulled too, so it went ${heading}.`
-      : optionId === 'leave' ? `You left it heading straight at ${exits.straight}. ${heroPulled ? `Hero pulled and sent it ${heading}.` : 'Hero did nothing.'}`
+      optionId === 'pull' ? `You pulled, aiming it left at ${exits.left} people. Hero pulled too, so it went ${heading}.`
+      : optionId === 'leave' ? `You left it heading straight at ${exits.straight} people. ${heroPulled ? `Hero pulled and sent it ${heading}.` : 'Hero did nothing.'}`
       : `You jammed Hero’s lever, so nobody could pull. It went ${heading}.`;
     return { value: hit, valueLabel: `${hit} ${hit === 1 ? 'person' : 'people'} hit`, events, summary: `${what} ${hit} hit.` };
   },

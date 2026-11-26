@@ -30,6 +30,8 @@ const state = {
   select: null as null | ((n: number) => void),
   skip: null as null | (() => void),
   share: null as null | (() => void),
+  /** Keeps the desktop side panel as tall as the scene. */
+  sceneSize: null as ResizeObserver | null,
 };
 
 const esc = (str: string) => str.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
@@ -142,6 +144,8 @@ function cardModal(id: string, rule: string, badge: string) {
 function teardown() {
   clearInterval(state.homeTick);
   cancelAnimationFrame(state.clockRaf);
+  state.sceneSize?.disconnect();
+  state.sceneSize = null;
   state.stage?.destroy();
   state.stage = null;
   state.onNext = state.select = state.skip = null;
@@ -271,6 +275,11 @@ function startRound(idx: number) {
   applySettings();
 
   const sceneWrap = root.querySelector<HTMLElement>('.scene-wrap')!;
+  // On desktop the side panel matches the scene's height, so cards line up with its top and
+  // options with its bottom. CSS only uses --scene-h in the wide layout.
+  const roundEl = root.querySelector<HTMLElement>('.round')!;
+  state.sceneSize = new ResizeObserver(() => roundEl.style.setProperty('--scene-h', `${sceneWrap.offsetHeight}px`));
+  state.sceneSize.observe(sceneWrap);
   const stage = createStage(round, sceneWrap);
   state.stage = stage;
   gsap.from(root.querySelectorAll('.card, .option'), { y: 16, opacity: 0, stagger: 0.04, duration: 0.3, ease: 'power2.out', clearProps: 'all' });
